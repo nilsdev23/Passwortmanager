@@ -6,7 +6,7 @@
   --panel: #ffffff;     /* weiß für karten/panels */
   --panel-2: #eef1f6;   /* hellgrau für inputs, tabellenheader */
   --txt: #1e1e2f;       /* dunkles anthrazit für text */
-  --muted: #6c7380;     /* gedecktes grau für helper/labels */
+  --muted: #000000;     /* gedecktes grau für helper/labels */
   --primary: #3b82f6;   /* kräftiges blau für buttons/links */
   --accent: #06b6d4;    /* türkis als highlight (hover/links) */
   --warn: #facc15;      /* gelb für warnungen */
@@ -41,7 +41,7 @@ body{
 .brand .logo{ width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg, var(--primary), var(--accent)); display:inline-block; }
 
 .nav a{
-  color:#eaeaea; text-decoration:none; padding:10px 12px; border-radius:8px;
+  color:#636363; text-decoration:none; padding:10px 12px; border-radius:8px;
 }
 .nav a.active, .nav a:hover{ color:#0d0f0c; background:var(--accent); }
 
@@ -60,7 +60,7 @@ body{
 .form p.lead{ margin:0 0 12px 0; color:var(--muted); }
 
 .field{ display:grid; gap:6px }
-label{ color:#eef7f7; font-size:14px }
+label{ color: var(--muted); font-size:14px }
 
 input[type="email"], input[type="password"], input[type="text"], input[type="number"]{
   width:100%; padding:12px 14px; border-radius:10px; background:var(--panel-2);
@@ -89,7 +89,7 @@ input:focus{ box-shadow:var(--focus); border-color:var(--accent); }
 .helper{ color:#eef7f7; opacity:.8; font-size:13px }
 .notice{
   padding:12px 14px; border:1px dashed var(--border); border-radius:10px;
-  color:#eef7f7; background:rgba(255,255,255,0.06);
+  color:var(--muted); background:rgba(255,255,255,0.06);
 }
 
 /* Grid & Table */
