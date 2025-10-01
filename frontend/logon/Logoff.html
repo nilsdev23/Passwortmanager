@@ -1,27 +1,31 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logoff – Passwortmanager</title>
-<link rel="stylesheet" href="../css/styles.css" />
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script type="module" src="../js/logoff.js"></script>
-<script type="module" src="../js/common.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Logoff – Passwortmanager</title>
+
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-<nav class="navbar">
-<a href="../logon/Logon.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
-<a class="active" href="./Logoff.html">Logout</a>
-</nav>
-<main class="container">
-<div class="card" style="max-width:520px;margin:0 auto; text-align:center;">
-<h1>Logout</h1>
-<p id="message" class="small">Wird abgemeldet…</p>
-<div class="actions" style="justify-content:center; margin-top:12px">
-<a class="btn" href="./Logon.html">Zum Login</a>
-</div>
-</div>
-</main>
+  <nav class="navbar bg-body-tertiary border-bottom mb-3">
+    <div class="container">
+      <a class="navbar-brand" href="../homepage.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="card p-4 mx-auto text-center" style="max-width:520px">
+      <h1 class="h4">Logout</h1>
+      <p id="message" class="text-muted">Wird abgemeldet…</p>
+      <a class="btn btn-outline-secondary mt-2" href="./Logon.html">Zum Login</a>
+    </div>
+  </main>
+
+  <script src="../js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script type="module" src="../js/common.js"></script>
+  <script type="module" src="../js/logoff.js"></script>
 </body>
 </html>

@@ -1,13 +1,38 @@
-import { ajaxJSON } from './common.js';
+import { ajaxJSON } from "./common.js";
 
+$(function () {
+  const $form = $("#formSignup");
+  const $btn  = $("#btnSignup");
+  const $err  = $("#formError");
 
-$(function(){
-$('#btnSignup').on('click', function(){
-const f = new FormData(document.getElementById('formSignup'));
-if(f.get('password') !== f.get('password2')) return alert('Passwörter stimmen nicht überein');
-const body = { email: f.get('email'), password: f.get('password') };
-ajaxJSON('/auth/register', 'POST', body)
-.done(() => { alert('Registrierung erfolgreich. Bitte einloggen.'); location.href = '../logon/Logon.html'; })
-.fail(x => alert(x.responseJSON?.message || 'Registrierung fehlgeschlagen'));
-});
+  const isEmail = (v) => /^\S+@\S+\.\S+$/.test(String(v).trim());
+
+  function busy(on) {
+    $btn.prop("disabled", on).text(on ? "Wird angelegt…" : "Konto anlegen");
+  }
+
+  function validate(email, pw, pw2) {
+    if (!isEmail(email)) return "Bitte eine gültige E-Mail eingeben.";
+    if (!pw || pw.length < 8) return "Passwort muss mindestens 8 Zeichen haben.";
+    if (pw !== pw2) return "Passwörter stimmen nicht überein.";
+    return null;
+  }
+
+  $btn.on("click", submit);
+  $form.on("submit", (e) => { e.preventDefault(); submit(); });
+
+  function submit() {
+    $err.text("");
+    const f = new FormData($form[0]);
+    const email = f.get("email"); const pw = f.get("password"); const pw2 = f.get("password2");
+
+    const msg = validate(email, pw, pw2);
+    if (msg) return $err.text(msg);
+
+    busy(true);
+    ajaxJSON("/auth/register", "POST", { email, password: pw })
+      .done(() => { alert("Registrierung erfolgreich. Bitte einloggen."); window.location.href = "../logon/Logon.html"; })
+      .fail((x) => $err.text(x?.responseJSON?.message || "Registrierung fehlgeschlagen."))
+      .always(() => busy(false));
+  }
 });

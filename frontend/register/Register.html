@@ -1,41 +1,53 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Registrieren – Passwortmanager</title>
-<link rel="stylesheet" href="../css/styles.css" />
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script type="module" src="../js/register.js"></script>
-<script type="module" src="../js/common.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registrieren – Passwortmanager</title>
+
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-<nav class="navbar">
-<a href="../settings/settings.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
-<a href="../logon/Logon.html">Login</a>
-<a class="active" href="./Register.html">Registrieren</a>
-</nav>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
+    <div class="container">
+      <a class="navbar-brand" href="../homepage.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
+      <div class="ms-auto">
+        <a class="btn btn-outline-secondary btn-sm" href="../logon/Logon.html">Login</a>
+      </div>
+    </div>
+  </nav>
 
+  <main class="container">
+    <div class="card p-4 mx-auto" style="max-width:640px">
+      <h1 class="h4 mb-3">Registrieren</h1>
 
-<main class="container">
-<div class="card" style="max-width:640px;margin:0 auto;">
-<h1>Registrieren</h1>
-<form id="formSignup" class="row cols-2">
-<div>
-<label>E-Mail</label>
-<input name="email" type="email" required />
-</div>
-<div>
-<label>Passwort</label>
-<input name="password" type="password" minlength="8" required />
-</div>
-<div>
-<label>Passwort wiederholen</label>
-<input name="password2" type="password" minlength="8" required />
-</div>
-</form>
-<div class="actions" style="margin-top:12px"><button id="btnSignup" class="btn btn-primary">Konto anlegen</button></div>
-</div>
-</main>
+      <form id="formSignup" class="row g-3">
+        <div class="col-12">
+          <label class="form-label">E-Mail</label>
+          <input class="form-control" name="email" type="email" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Passwort</label>
+          <input class="form-control" name="password" type="password" minlength="8" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Passwort wiederholen</label>
+          <input class="form-control" name="password2" type="password" minlength="8" required />
+        </div>
+      </form>
+
+      <div class="d-flex gap-2 mt-2">
+        <button id="btnSignup" class="btn btn-primary">Konto anlegen</button>
+      </div>
+
+      <div id="formError" class="text-danger small mt-2"></div>
+    </div>
+  </main>
+
+  <script src="../js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script type="module" src="../js/common.js"></script>
+  <script type="module" src="../js/register.js"></script>
 </body>
 </html>

@@ -1,43 +1,53 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logon – Passwortmanager</title>
-<link rel="stylesheet" href="../css/styles.css" />
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script type="module" src="../js/logon.js"></script>
-<script type="module" src="../js/common.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Logon – Passwortmanager</title>
+
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-<nav class="navbar">
-<a href="../settings/settings.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
-<a class="active" href="./Logon.html">Login</a>
-<a href="../register/Register.html">Registrieren</a>
-</nav>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
+    <div class="container">
+      <a class="navbar-brand" href="../homepage.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
+      <div class="ms-auto">
+        <a class="btn btn-outline-secondary btn-sm" href="../register/Register.html">Registrieren</a>
+      </div>
+    </div>
+  </nav>
 
+  <main class="container">
+    <div class="card p-4 mx-auto" style="max-width:520px">
+      <h1 class="h4 mb-3">Anmelden</h1>
+      <form id="formLogin" class="vstack gap-2">
+        <div>
+          <label class="form-label">E-Mail</label>
+          <input class="form-control" name="email" type="email" required />
+        </div>
+        <div>
+          <label class="form-label">Passwort</label>
+          <input class="form-control" name="password" type="password" required />
+        </div>
+        <button class="btn btn-primary mt-2" type="submit">Login</button>
+      </form>
 
-<main class="container">
-<div class="card" style="max-width:520px;margin:0 auto;">
-<h1>Anmelden</h1>
-<form id="formLogin">
-<label>E-Mail</label>
-<input name="email" type="email" required />
-<label>Passwort</label>
-<input name="password" type="password" required />
-<div class="actions" style="margin-top:12px"><button class="btn btn-primary" type="submit">Login</button></div>
-</form>
+      <div id="totpStep" class="card mt-3 p-3 d-none">
+        <h2 class="h6">TOTP-Code</h2>
+        <form id="formTotp" class="vstack gap-2">
+          <input class="form-control" name="code" pattern="\\d{6}" placeholder="123456" required />
+          <button class="btn btn-primary" type="submit">Prüfen</button>
+        </form>
+      </div>
 
+      <div id="formError" class="text-danger small mt-2"></div>
+    </div>
+  </main>
 
-<div id="totpStep" class="card hidden" style="margin-top:16px">
-<h3>TOTP-Code</h3>
-<form id="formTotp">
-<label>6-stelliger Code</label>
-<input name="code" pattern="\d{6}" placeholder="123456" required />
-<div class="actions" style="margin-top:12px"><button class="btn btn-primary">Prüfen</button></div>
-</form>
-</div>
-</div>
-</main>
+  <script src="../js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script type="module" src="../js/common.js"></script>
+  <script type="module" src="../js/logon.js"></script>
 </body>
 </html>
