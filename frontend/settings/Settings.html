@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Einstellungen – Passwortmanager</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script type="module" src="../js/settings.js"></script>
+<script type="module" src="../js/common.js"></script>
+</head>
+<body>
+<nav class="navbar">
+<a href="./settings.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
+<a href="../logon/Logoff.html">Logout</a>
+<a class="active" href="./settings.html">Einstellungen</a>
+</nav>
+
+
+<main class="container">
+<div class="card">
+<h1>Zweiter Faktor (TOTP)</h1>
+<div id="stateDisabled" class="">
+<p class="small">Schütze dein Konto mit einer Authenticator-App.</p>
+<button id="btnStart" class="btn btn-primary">TOTP einrichten</button>
+</div>
+<div id="stateSetup" class="hidden">
+<div class="row cols-2">
+<img id="qr" class="qr" alt="QR"/>
+<div>
+<label>otpauth URL</label>
+<input id="otpauth" readonly />
+<form id="formConfirm" style="margin-top:12px">
+<label>6-stelliger Code</label>
+<input name="code" pattern="\d{6}" placeholder="123456" required />
+<div class="actions" style="margin-top:12px"><button class="btn btn-primary">Aktivieren</button></div>
+</form>
+</div>
+</div>
+</div>
+<div id="stateEnabled" class="hidden">
+<div class="card" style="background:#f0fdf4;border-color:#bbf7d0">TOTP ist aktiviert.</div>
+<button id="btnDisable" class="btn">Deaktivieren</button>
+</div>
+</div>
+
+
+<div class="card" style="margin-top:16px">
+<h1>Alexa-Verknüpfung</h1>
+<div id="notLinked" class="">
+<p class="small">Verknüpfe dein Konto, um Logins via Alexa zu bestätigen.</p>
+<a id="btnLink" class="btn btn-primary" href="#">Mit Alexa verknüpfen</a>
+</div>
+<div id="linked" class="hidden">
+<div class="card" style="background:#f0fdf4;border-color:#bbf7d0">Alexa ist verknüpft.</div>
+<button id="btnTest" class="btn">Testanfrage senden</button>
+</div>
+</div>
+</main>
+</body>
+</html>

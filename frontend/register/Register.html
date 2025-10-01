@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Registrieren – Passwortmanager</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script type="module" src="../js/register.js"></script>
+<script type="module" src="../js/common.js"></script>
+</head>
+<body>
+<nav class="navbar">
+<a href="../settings/settings.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
+<a href="../logon/Logon.html">Login</a>
+<a class="active" href="./Register.html">Registrieren</a>
+</nav>
+
+
+<main class="container">
+<div class="card" style="max-width:640px;margin:0 auto;">
+<h1>Registrieren</h1>
+<form id="formSignup" class="row cols-2">
+<div>
+<label>E-Mail</label>
+<input name="email" type="email" required />
+</div>
+<div>
+<label>Passwort</label>
+<input name="password" type="password" minlength="8" required />
+</div>
+<div>
+<label>Passwort wiederholen</label>
+<input name="password2" type="password" minlength="8" required />
+</div>
+</form>
+<div class="actions" style="margin-top:12px"><button id="btnSignup" class="btn btn-primary">Konto anlegen</button></div>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Logon – Passwortmanager</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script type="module" src="../js/logon.js"></script>
+<script type="module" src="../js/common.js"></script>
+</head>
+<body>
+<nav class="navbar">
+<a href="../settings/settings.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
+<a class="active" href="./Logon.html">Login</a>
+<a href="../register/Register.html">Registrieren</a>
+</nav>
+
+
+<main class="container">
+<div class="card" style="max-width:520px;margin:0 auto;">
+<h1>Anmelden</h1>
+<form id="formLogin">
+<label>E-Mail</label>
+<input name="email" type="email" required />
+<label>Passwort</label>
+<input name="password" type="password" required />
+<div class="actions" style="margin-top:12px"><button class="btn btn-primary" type="submit">Login</button></div>
+</form>
+
+
+<div id="totpStep" class="card hidden" style="margin-top:16px">
+<h3>TOTP-Code</h3>
+<form id="formTotp">
+<label>6-stelliger Code</label>
+<input name="code" pattern="\d{6}" placeholder="123456" required />
+<div class="actions" style="margin-top:12px"><button class="btn btn-primary">Prüfen</button></div>
+</form>
+</div>
+</div>
+</main>
+</body>
+</html>
