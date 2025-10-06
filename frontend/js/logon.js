@@ -1,29 +1,49 @@
-import { ajaxJSON, setAuth } from "./common.js";
+import { ajaxJSON, setAuth, fetchMe, humanError } from "./common.js";
 
-const state = { tempLogin: null };
+const state = { tmpToken: null };
 
 $(function () {
   $("#formLogin").on("submit", function (e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(this).entries());
+
     ajaxJSON("/auth/login", "POST", body)
-      .done((res) => {
-        if (res.requiresTotp) {
-          state.tempLogin = res.tempLogin;
-          $("#totpStep").removeClass("d-none");
-        } else {
-          setAuth(res.accessToken, res.user);
-          window.location.href = "../settings/settings.html";
+      .done(res => {
+        // Backend liefert tmpToken
+        state.tmpToken = res?.tmpToken;
+        if (!state.tmpToken) {
+          $("#formError").text("Kein tmpToken erhalten.");
+          return;
         }
+        $("#totpStep").removeClass("d-none");
       })
-      .fail((x) => $("#formError").text(x?.responseJSON?.message || "Login fehlgeschlagen"));
+      .fail(x => $("#formError").text(humanError(x)));
   });
 
   $("#formTotp").on("submit", function (e) {
     e.preventDefault();
     const code = new FormData(this).get("code");
-    ajaxJSON("/auth/totp/verify", "POST", { code, tempLogin: state.tempLogin })
-      .done((res) => { setAuth(res.accessToken, res.user); window.location.href = "../settings/settings.html"; })
-      .fail(() => $("#formError").text("TOTP ungültig"));
+    if (!state.tmpToken) {
+      $("#formError").text("Bitte erst einloggen.");
+      return;
+    }
+
+    ajaxJSON("/auth/totp-verify", "POST", { tmpToken: state.tmpToken, code })
+      .done(async res => {
+        const token = res?.token;
+        if (!token) {
+          $("#formError").text("Kein JWT erhalten.");
+          return;
+        }
+        // optional: Userdaten nachladen
+        try {
+          const me = await fetchMe();
+          setAuth(token, me?.email || me?.username || null);
+        } catch {
+          setAuth(token, null);
+        }
+        window.location.href = "../settings/settings.html";
+      })
+      .fail(x => $("#formError").text(humanError(x)));
   });
 });

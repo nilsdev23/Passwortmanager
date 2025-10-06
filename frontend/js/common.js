@@ -1,16 +1,18 @@
-// Globale Basis-URL (bei Bedarf anpassen, z.B. "http://localhost:8080/api")
-export const API_BASE = "/api";
+// ===== Backend-Basis =====
+export const API_BASE = "https://password-backend-fc0k.onrender.com/api";
 
-// ===== Auth Helpers =====
+// ===== Auth-Storage =====
+const LS_AUTH = "pm_auth"; // { token, email }
+
 export function getAuth() {
-  try { return JSON.parse(localStorage.getItem("pm_auth")) || {}; }
+  try { return JSON.parse(localStorage.getItem(LS_AUTH)) || {}; }
   catch { return {}; }
 }
-export function setAuth(token, user) {
-  localStorage.setItem("pm_auth", JSON.stringify({ token, user }));
+export function setAuth(token, email) {
+  localStorage.setItem(LS_AUTH, JSON.stringify({ token, email }));
 }
 export function clearAuth() {
-  localStorage.removeItem("pm_auth");
+  localStorage.removeItem(LS_AUTH);
 }
 export function authHeader() {
   const s = getAuth();
@@ -24,7 +26,7 @@ export function requireAuthOrRedirect() {
   return true;
 }
 
-// ===== AJAX Helper (jQuery) =====
+// ===== AJAX Helper =====
 export function ajaxJSON(path, method = "GET", body = undefined, extraHeaders = {}) {
   return $.ajax({
     url: API_BASE + path,
@@ -36,10 +38,12 @@ export function ajaxJSON(path, method = "GET", body = undefined, extraHeaders = 
   });
 }
 
-// ===== Kleine UI-Utils =====
-export function showSel(selector, on) {
-  $(selector).toggleClass("d-none", !on);
+// ===== Fehlertext schöner anzeigen =====
+export function humanError(x) {
+  return (x?.responseJSON?.error) || (x?.responseJSON?.message) || x?.statusText || "Fehler";
 }
-export function show($el, on) {
-  $el.toggleClass("d-none", !on);
+
+// ===== User laden =====
+export function fetchMe() {
+  return ajaxJSON("/user/me", "GET");
 }
