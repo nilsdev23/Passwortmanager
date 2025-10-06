@@ -1,11 +1,10 @@
-# Docker-Context klein halten
 .git
 .gitignore
 node_modules
 **/node_modules
 *.log
 *.zip
+**/.DS_Store
 Dockerfile
 docker-compose.yml
 README.md
-**/.DS_Store

@@ -1,19 +1,16 @@
-# ---- Runtime (nginx) ----
 FROM nginx:1.25-alpine
 
-# Tools für envsubst (PORT → nginx-Config) + CRLF-Fix für Windows-Skripte
+# Tools: envsubst + CRLF-Fix für Windows-Skripte
 RUN apk add --no-cache bash gettext dos2unix
 
-# Nginx-Template & Entrypoint kopieren (als root)
+# Nginx-Template & Entrypoint
 COPY ./nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY ./docker-entrypoint.sh /usr/local/bin/render-entrypoint.sh
 RUN dos2unix /usr/local/bin/render-entrypoint.sh && chmod +x /usr/local/bin/render-entrypoint.sh
 
-# Statisches Frontend kopieren
-# (dank .dockerignore werden Dockerfiles & README etc. nicht mitkopiert)
+# Statisches Frontend (alles außer via .dockerignore ausgeschlossen)
 COPY ./ /usr/share/nginx/html/
 
-# Als root bleiben, damit wir /etc/nginx/conf.d/default.conf schreiben können.
-# nginx selbst (master) läuft dann als root und spawnt worker als nginx-User.
+# Entrypoint rendert die Port-Config und startet nginx
 ENTRYPOINT ["/usr/local/bin/render-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
