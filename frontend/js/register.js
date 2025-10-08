@@ -1,7 +1,7 @@
 import { ajaxJSON, humanError } from "./common.js";
 
 $(function () {
-  const API = "https://password-backend-fc0k.onrender.com/api"; // <-- fix
+  const API = "https://password-backend-fc0k.onrender.com"; // <-- fix
 
   const $form = $("#formSignup");
   const $btn = $("#btnSignup");
