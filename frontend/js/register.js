@@ -1,13 +1,14 @@
 import { ajaxJSON, humanError } from "./common.js";
 
 $(function () {
+  const API = "https://password-backend-fc0k.onrender.com/api"; // <-- fix
+
   const $form = $("#formSignup");
   const $btn  = $("#btnSignup");
   const $err  = $("#formError");
 
-  const isEmail = (v) => /^\S+@\S+\.\S+$/.test(String(v).trim());
-
-  function busy(on) { $btn.prop("disabled", on).text(on ? "Wird angelegt…" : "Konto anlegen"); }
+  const isEmail = v => /^\S+@\S+\.\S+$/.test(String(v).trim());
+  const busy = on => $btn.prop("disabled", on).text(on ? "Wird angelegt…" : "Konto anlegen");
 
   function validate(email, pw, pw2) {
     if (!isEmail(email)) return "Bitte eine gültige E-Mail eingeben.";
@@ -17,26 +18,25 @@ $(function () {
   }
 
   $btn.on("click", submit);
-  $form.on("submit", (e) => { e.preventDefault(); submit(); });
+  $form.on("submit", e => { e.preventDefault(); submit(); });
 
   function submit() {
     $err.text("");
     const f = new FormData($form[0]);
-    const email = f.get("email");
+    const email = String(f.get("email") || "").trim().toLowerCase(); // Backend prüft case-insensitive
     const pw    = f.get("password");
     const pw2   = f.get("password2");
 
     const msg = validate(email, pw, pw2);
-    if (msg) return $err.text(msg);
+    if (msg) { $err.text(msg); return; }
 
     busy(true);
-    ajaxJSON("/auth/register", "POST", { email, password: pw })
+    ajaxJSON(`${API}/auth/register`, "POST", { email, password: pw })
       .done(res => {
-        // Falls geliefert: otpauth-URI anzeigen
         if (res?.totpProvisioningUri) {
           alert(
             "Registrierung erfolgreich.\n\n" +
-            "Richte jetzt in deiner Authenticator-App folgenden Eintrag ein:\n\n" +
+            "Bitte in deiner Authenticator-App hinzufügen:\n\n" +
             res.totpProvisioningUri +
             (res?.totpSecret ? `\n\nSecret: ${res.totpSecret}` : "")
           );
@@ -45,7 +45,15 @@ $(function () {
         }
         window.location.href = "../logon/Logon.html";
       })
-      .fail(x => $err.text(humanError(x)))
+      .fail(xhr => {
+        if (xhr?.status === 409) {
+          $err.text("E-Mail ist bereits vergeben.");
+        } else if (xhr?.status === 400) {
+          $err.text(xhr.responseJSON?.error || "Eingaben unvollständig oder ungültig.");
+        } else {
+          $err.text(humanError(xhr));
+        }
+      })
       .always(() => busy(false));
   }
 });
