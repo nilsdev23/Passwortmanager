@@ -40,7 +40,7 @@ $(function () {
     const id = $(this).data("id");
     if (!id) return;
     if (!confirm("Eintrag wirklich löschen?")) return;
-    ajaxJSON(`/vault/${encodeURIComponent(id)}`, "DELETE")
+    ajaxJSON(Api_Base + `/vault/${encodeURIComponent(id)}`, "DELETE")
       .done(() => load())
       .fail(x => alert(humanError(x)));
   });
