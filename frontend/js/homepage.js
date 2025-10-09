@@ -40,7 +40,7 @@ $(function () {
     const id = $(this).data("id");
     if (!id) return;
     if (!confirm("Eintrag wirklich löschen?")) return;
-    ajaxJSON(Api_Base + `/vault/${encodeURIComponent(id)}`, "DELETE")
+    ajaxJSON(`/vault/${encodeURIComponent(id)}`, "DELETE")
       .done(() => load())
       .fail(x => alert(humanError(x)));
   });
@@ -51,7 +51,7 @@ $(function () {
 function load(query = "") {
   $err().text("");
   $.ajax({
-    url: API_BASE + "/vault" + (query ? `?query=${encodeURIComponent(query)}` : ""),
+    url: "https://password-backend-fc0k.onrender.com/api/vault" + (query ? `?query=${encodeURIComponent(query)}` : ""),
     headers: authHeader()
   })
     .done(items => renderList(items || []))
@@ -91,11 +91,11 @@ function openCreate() {
 }
 
 // utils
-function genPassword(){
+function genPassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*()_+";
-  let pw = ""; for (let i=0;i<18;i++) pw += chars[Math.floor(Math.random()*chars.length)];
+  let pw = ""; for (let i = 0; i < 18; i++) pw += chars[Math.floor(Math.random() * chars.length)];
   return pw;
 }
-function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-function escapeHtml(s){ return String(s).replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
-function escapeAttr(s){ return escapeHtml(s).replace(/"/g,"&quot;"); }
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+function escapeHtml(s) { return String(s).replace(/[&<>\"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[m])); }
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
