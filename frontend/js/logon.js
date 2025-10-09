@@ -42,7 +42,7 @@ $(function () {
         } catch {
           setAuth(token, null);
         }
-        window.location.href = "../settings/settings.html";
+        window.location.href = "../homepage.html";
       })
       .fail(x => $("#formError").text(humanError(x)));
   });
