@@ -1,12 +1,14 @@
+// vault.js
+// UI-Logik für Passworteinträge (Liste, Suche, Neu, Löschen).
 import { ajaxJSON, authHeader, requireAuthOrRedirect, humanError } from "./common.js";
 
-const $rows = () => $("#vaultRows");
+const $rows  = () => $("#vaultRows");
 const $empty = () => $("#emptyState");
-const $err = () => $("#listError");
+const $err   = () => $("#listError");
 let modal;
 
 $(function () {
-  // wenn Vault geschützt ist: Login verlangen
+  // Wenn Vault geschützt ist: Login verlangen
   if (!requireAuthOrRedirect()) return;
 
   modal = new bootstrap.Modal(document.getElementById("pwModal"));
@@ -19,20 +21,28 @@ $(function () {
   $("#formItem").on("submit", function (e) {
     e.preventDefault();
     $("#modalError").text("");
+
     const data = Object.fromEntries(new FormData(this).entries());
     const isCreate = !data.id;
 
-    const path = isCreate ? "/vault" : `/vault/${data.id}`;
-    const method = isCreate ? "POST" : "PUT";
+    const path   = isCreate ? "/vault" : `/vault/${encodeURIComponent(data.id)}`;
+    const method = isCreate ? "POST"   : "PUT";
 
-    ajaxJSON(path, method, {
-      title: data.title,
-      username: data.username,
-      password: data.password,
-      url: data.url,
-      notes: data.notes
-    })
-      .done(() => { modal.hide(); this.reset(); load(); })
+    // Body konsistent zusammenstellen
+    const body = {
+      title:    (data.title ?? "").trim(),
+      username: (data.username ?? "").trim(),
+      password: (data.password ?? "").trim(),
+      url:      (data.url ?? "").trim(),
+      notes:    (data.notes ?? "").trim()
+    };
+
+    ajaxJSON(path, method, body)
+      .done(() => {
+        modal.hide();
+        this.reset();
+        load();
+      })
       .fail(x => $("#modalError").text(humanError(x)));
   });
 
@@ -40,6 +50,7 @@ $(function () {
     const id = $(this).data("id");
     if (!id) return;
     if (!confirm("Eintrag wirklich löschen?")) return;
+
     ajaxJSON(`/vault/${encodeURIComponent(id)}`, "DELETE")
       .done(() => load())
       .fail(x => alert(humanError(x)));
@@ -50,14 +61,15 @@ $(function () {
 
 function load(query = "") {
   $err().text("");
-  $.ajax({
-    url: "https://password-backend-fc0k.onrender.com/api/vault" + (query ? `?query=${encodeURIComponent(query)}` : ""),
-    headers: authHeader()
-  })
+
+  const path = "/vault" + (query ? `?query=${encodeURIComponent(query)}` : "");
+  ajaxJSON(path, "GET")
     .done(items => renderList(items || []))
     .fail(x => {
-      $rows().empty(); $empty().addClass("d-none");
+      $rows().empty();
+      $empty().addClass("d-none");
       $err().text(humanError(x));
+      if (x?.status === 401) requireAuthOrRedirect(true);
     });
 }
 
@@ -65,6 +77,7 @@ function renderList(items) {
   $rows().empty();
   if (!items.length) { $empty().removeClass("d-none"); return; }
   $empty().addClass("d-none");
+
   items.forEach(it => {
     const row = $(`
       <tr>
@@ -90,10 +103,11 @@ function openCreate() {
   modal.show();
 }
 
-// utils
+// --- kleine Utils ---
 function genPassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*()_+";
-  let pw = ""; for (let i = 0; i < 18; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  let pw = "";
+  for (let i = 0; i < 18; i++) pw += chars[Math.floor(Math.random() * chars.length)];
   return pw;
 }
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
