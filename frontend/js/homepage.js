@@ -1,13 +1,68 @@
-import { ajaxJSON, authHeader, requireAuthOrRedirect, humanError } from "./common.js";
+// vault.js
+// UI-Logik für Passworteinträge (Liste, Suche, Neu, Löschen) — jetzt via GraphQL.
+import { authHeader, requireAuthOrRedirect, humanError } from "./common.js";
 
-const $rows   = () => $("#vaultRows");
-const $empty  = () => $("#emptyState");
-const $err    = () => $("#listError");
+const $rows  = () => $("#vaultRows");
+const $empty = () => $("#emptyState");
+const $err   = () => $("#listError");
 let modal;
 
-// ===== Boot =====
+
+
+// ---- GraphQL Wrapper (liefert jQuery-Promise, kompatibel zu .done/.fail) ----
+function gql(query, variables = {}) {
+  const d = $.Deferred();
+  fetch("https://password-graphql.onrender.com/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(), // enthält Authorization: Bearer <jwt>
+    },
+    body: JSON.stringify({ query, variables }),
+  })
+    .then(async (res) => {
+      let json = {};
+      try { json = await res.json(); } catch {}
+      if (!res.ok) {
+        d.reject({ status: res.status, responseJSON: json });
+        return;
+      }
+      if (json.errors && json.errors.length) {
+        d.reject({ status: 400, responseJSON: { message: json.errors[0].message } });
+        return;
+      }
+      d.resolve(json.data);
+    })
+    .catch((err) => d.reject({ status: 0, responseText: String(err) }));
+  return d.promise();
+}
+
+// ---- GraphQL Operations ----
+const Q_VAULT_ITEMS = `
+  query VaultItems {
+    vaultItems {
+      id title username password url notes createdAt updatedAt
+    }
+  }
+`;
+const M_CREATE = `
+  mutation Create($input: VaultUpsertInput!) {
+    createVaultItem(input: $input) { id }
+  }
+`;
+const M_UPDATE = `
+  mutation Update($id: ID!, $input: VaultUpsertInput!) {
+    updateVaultItem(id: $id, input: $input) { id updatedAt }
+  }
+`;
+const M_DELETE = `
+  mutation Delete($id: ID!) {
+    deleteVaultItem(id: $id)
+  }
+`;
+
 $(function () {
-  // Login erforderlich
+  // Wenn Vault geschützt ist: Login verlangen
   if (!requireAuthOrRedirect()) return;
 
   // Navbar anpassen (Login/Registrieren raus, Logout rein)
@@ -20,31 +75,45 @@ $(function () {
   $("#btnAdd").on("click", () => openCreate());
   $("#btnReload").on("click", () => load());
   $("#search").on("input", debounce(() => load($("#search").val().trim()), 250));
-  $("#btnGen").on("click", () => {
-    const $pw = $('input[name="password"]');
-    $pw.val(genPassword());
-    $pw.trigger("focus").trigger("select");
+  $("#btnGen").on("click", () => $("[name=password]").val(genPassword()));
+
+  $("#formItem").on("submit", function (e) {
+    e.preventDefault();
+    $("#modalError").text("");
+
+    const data = Object.fromEntries(new FormData(this).entries());
+    const isCreate = !data.id;
+
+    // Body konsistent zusammenstellen
+    const body = {
+      title:    (data.title ?? "").trim(),
+      username: (data.username ?? "").trim(),
+      password: (data.password ?? "").trim(),
+      url:      (data.url ?? "").trim(),
+      notes:    (data.notes ?? "").trim()
+    };
+
+    const op = isCreate
+      ? { query: M_CREATE, variables: { input: body } }
+      : { query: M_UPDATE, variables: { id: Number(data.id), input: body } };
+
+    gql(op.query, op.variables)
+      .done(() => {
+        modal.hide();
+        this.reset();
+        load();
+      })
+      .fail(x => $("#modalError").text(humanError(x)));
   });
 
-  // Formular-Submit (Create/Update)
-  $("#formItem").on("submit", onSubmitForm);
+  $(document).on("click", ".btn-delete", function () {
+    const id = $(this).data("id");
+    if (!id) return;
+    if (!confirm("Eintrag wirklich löschen?")) return;
 
-  // Tabellen-Delegation: Edit/Delete/Copy
-  $rows().on("click", ".btn-edit", onEditClick);
-  $rows().on("click", ".btn-delete", onDeleteClick);
-  $rows().on("click", ".btn-copy-user", onCopyUser);
-  $rows().on("click", ".btn-copy-pass", onCopyPass);
-
-  // Doppelklick: Username / Passwort kopieren
-  $rows().on("dblclick", 'td[data-col="username"]', async function () {
-    const text = $(this).find(".val").text().trim();
-    if (text) await copyWithAutoClear(text);
-    toast("Benutzername kopiert (30s).");
-  });
-  $rows().on("dblclick", 'td[data-col="password"]', async function () {
-    const text = $(this).find(".val").text().trim();
-    if (text) await copyWithAutoClear(text);
-    toast("Passwort kopiert (30s).");
+    gql(M_DELETE, { id: Number(id) })
+      .done(() => load())
+      .fail(x => alert(humanError(x)));
   });
 
   // Laden
@@ -72,14 +141,26 @@ function tweakNavbarForAuth() {
 // ===== Liste laden/rendern =====
 function load(query = "") {
   $err().text("");
-  $.ajax({
-    url: API_BASE + "/vault" + (query ? `?query=${encodeURIComponent(query)}` : ""),
-    headers: authHeader()
-  })
-    .done(items => renderList(items || []))
+
+  gql(Q_VAULT_ITEMS)
+    .done(({ vaultItems }) => {
+      let items = vaultItems || [];
+      // Client-seitige Suche (Titel/Username/URL)
+      if (query) {
+        const q = query.toLowerCase();
+        items = items.filter(it =>
+          (it.title || "").toLowerCase().includes(q) ||
+          (it.username || "").toLowerCase().includes(q) ||
+          (it.url || "").toLowerCase().includes(q)
+        );
+      }
+      renderList(items);
+    })
     .fail(x => {
-      $rows().empty(); $empty().addClass("d-none");
+      $rows().empty();
+      $empty().addClass("d-none");
       $err().text(humanError(x));
+      if (x?.status === 401) requireAuthOrRedirect(true);
     });
 }
 
@@ -88,29 +169,30 @@ function renderList(items) {
   if (!items.length) { $empty().removeClass("d-none"); return; }
   $empty().addClass("d-none");
 
-  items.forEach(it => {
-    const row = $(`
-      <tr data-id="${it.id}">
-        <td class="fw-semibold" data-col="title"><span class="val">${escapeHtml(it.title || "")}</span></td>
-        <td data-col="username">
-          <span class="val">${escapeHtml(it.username || "")}</span>
-          <button class="btn btn-sm btn-light btn-copy-user ms-2">Copy</button>
-        </td>
-        <td data-col="url">
-          ${it.url ? `<a href="${escapeAttr(it.url)}" target="_blank" rel="noopener">${escapeHtml(it.url)}</a>` : "<span class='text-muted'>—</span>"}
-        </td>
-        <td data-col="password">
-          ${it.password ? `<code class="val user-select-all">${escapeHtml(it.password)}</code>` : "<span class='text-muted'>—</span>"}
-          <button class="btn btn-sm btn-outline-secondary btn-copy-pass ms-2">Copy</button>
-        </td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-secondary btn-edit me-1">Bearb.</button>
-          <button class="btn btn-sm btn-outline-danger btn-delete">Löschen</button>
-        </td>
-      </tr>
-    `);
-    $rows().append(row);
-  });
+items.forEach(it => {
+  const urlHtml = it.url
+    ? `<a href="${escapeAttr(it.url)}" target="_blank" rel="noopener">${escapeHtml(it.url)}</a>`
+    : "";
+
+  const pwHtml = it.password
+    ? `<code class="user-select-all">${escapeHtml(it.password)}</code>`
+    : "<span class='text-muted'>—</span>";
+
+  const row = $(`
+    <tr>
+      <td class="fw-semibold">${escapeHtml(it.title || "")}</td>
+      <td>${escapeHtml(it.username || "")}</td>
+      <td>${urlHtml}</td>
+      <td>${pwHtml}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${it.id}">Löschen</button>
+      </td>
+    </tr>
+  `);
+
+  $rows().append(row);
+});
+
 }
 
 // ===== Create/Update =====
@@ -200,39 +282,13 @@ function openCreate() {
   modal.show();
 }
 
-function openEdit(item) {
-  const $f = $("#formItem");
-  $f[0].reset();
-  $f.find('input[name="id"]').val(item.id);
-  $f.find('input[name="title"]').val(item.title);
-  $f.find('input[name="username"]').val(item.username);
-  $f.find('input[name="password"]').val(item.password);
-  $f.find('input[name="url"]').val(item.url || "");
-  $("#btnSave").text("Aktualisieren");
-  $(".modal-title").text("Eintrag bearbeiten");
-  $("#modalError").text("");
-  modal.show();
-}
-
-// ===== Helfer =====
-function genPassword(){
+// --- kleine Utils ---
+function genPassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*()_+";
-  let pw = ""; for (let i=0;i<18;i++) pw += chars[Math.floor(Math.random()*chars.length)];
+  let pw = "";
+  for (let i = 0; i < 18; i++) pw += chars[Math.floor(Math.random() * chars.length)];
   return pw;
 }
-function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-function escapeHtml(s){ return String(s??"").replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function escapeAttr(s){ return escapeHtml(s).replace(/"/g,"&quot;"); }
-
-async function copyWithAutoClear(text, ms = 30_000) {
-  await navigator.clipboard.writeText(text);
-  setTimeout(() => navigator.clipboard.writeText("").catch(()=>{}), ms);
-}
-function toast(msg, ms=1800){
-  const el = document.createElement('div');
-  el.textContent = msg;
-  el.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 14px;border-radius:10px;border:1px solid #374151;z-index:9999;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.18)';
-  document.body.appendChild(el);
-  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; }, ms);
-  setTimeout(()=> el.remove(), ms+320);
-}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+function escapeHtml(s) { return String(s).replace(/[&<>\"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[m])); }
+function escapeAttr(s) { return escapeHtml(s).replace(/\"/g, "&quot;"); }
