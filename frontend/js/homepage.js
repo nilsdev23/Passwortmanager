@@ -7,16 +7,12 @@ const $empty = () => $("#emptyState");
 const $err   = () => $("#listError");
 let modal;
 
-// ---- GraphQL Endpoint (konfigurierbar) ----
-const GRAPHQL_URL =
-  window.GRAPHQL_URL ||
-  (window.ENV && window.ENV.GRAPHQL_URL) ||
-  "/graphql"; // bei separatem Deployment idealerweise absolute URL setzen
+
 
 // ---- GraphQL Wrapper (liefert jQuery-Promise, kompatibel zu .done/.fail) ----
 function gql(query, variables = {}) {
   const d = $.Deferred();
-  fetch(GRAPHQL_URL, {
+  fetch("https://password-graphql.onrender.com", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
