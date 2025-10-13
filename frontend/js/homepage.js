@@ -65,8 +65,13 @@ $(function () {
   // Wenn Vault geschützt ist: Login verlangen
   if (!requireAuthOrRedirect()) return;
 
+  // Navbar anpassen (Login/Registrieren raus, Logout rein)
+  tweakNavbarForAuth();
+
+  // Modal initialisieren
   modal = new bootstrap.Modal(document.getElementById("pwModal"));
 
+  // Events
   $("#btnAdd").on("click", () => openCreate());
   $("#btnReload").on("click", () => load());
   $("#search").on("input", debounce(() => load($("#search").val().trim()), 250));
@@ -111,9 +116,29 @@ $(function () {
       .fail(x => alert(humanError(x)));
   });
 
+  // Laden
   load();
 });
 
+// ===== Navbar anpassen (eingeloggt => Logout anzeigen)
+function tweakNavbarForAuth() {
+  // In deiner homepage.html befindet sich:
+  //   <ul class="navbar-nav me-auto"> Login | Registrieren | Einstellungen
+  // Wir ersetzen Login/Registrieren durch Logout
+  const $nav = $(".navbar .navbar-nav.me-auto");
+  if (!$nav.length) return;
+  const hasLogout = $nav.find('a[href="./logon/Logoff.html"]').length > 0;
+  if (hasLogout) return;
+  // baue neu: Einstellungen bleibt, davor Logout
+  const $settings = $nav.find('a[href="./settings/settings.html"]').closest("li");
+  const settingsLi = $settings.length ? $settings[0].outerHTML : "";
+  $nav.empty().append(`
+    <li class="nav-item"><a class="nav-link" href="./logon/Logoff.html">Logout</a></li>
+    ${settingsLi}
+  `);
+}
+
+// ===== Liste laden/rendern =====
 function load(query = "") {
   $err().text("");
 
@@ -170,10 +195,88 @@ items.forEach(it => {
 
 }
 
+// ===== Create/Update =====
+async function onSubmitForm(e) {
+  e.preventDefault();
+  $("#modalError").text("");
+  const data = Object.fromEntries(new FormData(this).entries());
+  // normalisieren
+  const body = {
+    title: (data.title || "").trim(),
+    username: (data.username || "").trim(),
+    password: (data.password || "").trim(),
+    url: (data.url || "").trim(),
+    notes: (data.notes || "").trim()
+  };
+  if (!body.title || !body.username || !body.password) {
+    $("#modalError").text("Titel, Nutzername und Passwort sind erforderlich.");
+    return;
+  }
+
+  try {
+    if (data.id) {
+      // UPDATE
+      await ajaxJSON(`/vault/${encodeURIComponent(data.id)}`, "PUT", body);
+    } else {
+      // CREATE
+      await ajaxJSON("/vault", "POST", body);
+    }
+    modal.hide();
+    load($("#search").val().trim());
+  } catch (x) {
+    $("#modalError").text(humanError(x));
+  }
+}
+
+// ===== Edit/Delete/Copy Handler =====
+async function onEditClick() {
+  const $tr = $(this).closest("tr");
+  const id  = $tr.data("id");
+  const it  = {
+    id,
+    title: $tr.find('td[data-col="title"] .val').text().trim(),
+    username: $tr.find('td[data-col="username"] .val').text().trim(),
+    password: $tr.find('td[data-col="password"] .val').text().trim(),
+    url: $tr.find('td[data-col="url"] a').attr("href") || "",
+  };
+  openEdit(it);
+}
+
+async function onDeleteClick() {
+  const $tr = $(this).closest("tr");
+  const id  = $tr.data("id");
+  if (!confirm("Diesen Eintrag wirklich löschen?")) return;
+  $.ajax({
+    url: API_BASE + `/vault/${encodeURIComponent(id)}`,
+    method: "DELETE",
+    headers: authHeader()
+  })
+    .done(() => { $tr.remove(); if (!$rows().children().length) $empty().removeClass("d-none"); })
+    .fail(x => alert(humanError(x)));
+}
+
+async function onCopyUser() {
+  const $tr = $(this).closest("tr");
+  const val = $tr.find('td[data-col="username"] .val').text().trim();
+  if (!val) return;
+  await copyWithAutoClear(val);
+  toast("Benutzername kopiert (30s).");
+}
+
+async function onCopyPass() {
+  const $tr = $(this).closest("tr");
+  const val = $tr.find('td[data-col="password"] .val').text().trim();
+  if (!val) return;
+  await copyWithAutoClear(val);
+  toast("Passwort kopiert (30s).");
+}
+
+// ===== Modal öffnen (Create/Edit) =====
 function openCreate() {
-  const $form = $("#formItem");
-  $form[0].reset();
-  $form.find("[name=id]").val("");
+  const $f = $("#formItem");
+  $f[0].reset();
+  $f.find('input[name="id"]').val("");
+  $("#btnSave").text("Speichern");
   $(".modal-title").text("Neues Passwort");
   $("#modalError").text("");
   modal.show();
