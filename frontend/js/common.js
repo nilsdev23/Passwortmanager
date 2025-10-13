@@ -4,14 +4,45 @@ export const API_BASE = "https://password-backend-fc0k.onrender.com/api";
 // ===== Auth-Storage =====
 const LS_AUTH = "pm_auth"; // { token, email }
 
+// robust lesen (pm_auth JSON, Fallback: legacy "token")
+export function getAuth() {
+  try {
+    const raw = localStorage.getItem(LS_AUTH);
+    if (raw) {
+      const obj = JSON.parse(raw);
+      if (obj && typeof obj.token === "string") return obj;
+    }
+    const legacy = localStorage.getItem("token");
+    if (legacy) return { token: legacy, email: null };
+  } catch {}
+  return { token: "", email: null };
+}
+
 export function getToken() {
-  try { return localStorage.getItem("token") || ""; } catch { return ""; }
+  return getAuth().token || "";
+}
+
+export function setAuth(token, email) {
+  const data = { token: token || "", email: email || null };
+  try {
+    localStorage.setItem(LS_AUTH, JSON.stringify(data));
+    // Legacy-Schreibweise beibehalten, damit Altcode nichts bricht:
+    localStorage.setItem("token", data.token);
+  } catch {}
+}
+
+export function clearAuth() {
+  try {
+    localStorage.removeItem(LS_AUTH);
+    localStorage.removeItem("token"); // legacy
+  } catch {}
 }
 
 export function authHeader() {
   const t = getToken();
   return t ? { Authorization: `Bearer ${t}` } : {};
 }
+
 
 /**
  * ajaxJSON - immer über die zentrale Basis-URL und mit Auth-Header.
