@@ -148,20 +148,30 @@ function renderList(items) {
   if (!items.length) { $empty().removeClass("d-none"); return; }
   $empty().addClass("d-none");
 
-  items.forEach(it => {
-    const row = $(`
-      <tr>
-        <td class="fw-semibold">\${escapeHtml(it.title || "")}</td>
-        <td>\${escapeHtml(it.username || "")}</td>
-        <td>\${it.url ? `<a href="\${escapeAttr(it.url)}" target="_blank" rel="noopener">\${escapeHtml(it.url)}</a>` : ""}</td>
-        <td>\${it.password ? `<code class="user-select-all">\${escapeHtml(it.password)}</code>` : "<span class='text-muted'>—</span>"}</td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-outline-danger btn-delete" data-id="\${it.id}">Löschen</button>
-        </td>
-      </tr>
-    `);
-    $rows().append(row);
-  });
+items.forEach(it => {
+  const urlHtml = it.url
+    ? `<a href="${escapeAttr(it.url)}" target="_blank" rel="noopener">${escapeHtml(it.url)}</a>`
+    : "";
+
+  const pwHtml = it.password
+    ? `<code class="user-select-all">${escapeHtml(it.password)}</code>`
+    : "<span class='text-muted'>—</span>";
+
+  const row = $(`
+    <tr>
+      <td class="fw-semibold">${escapeHtml(it.title || "")}</td>
+      <td>${escapeHtml(it.username || "")}</td>
+      <td>${urlHtml}</td>
+      <td>${pwHtml}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${it.id}">Löschen</button>
+      </td>
+    </tr>
+  `);
+
+  $rows().append(row);
+});
+
 }
 
 function openCreate() {
