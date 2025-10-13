@@ -1,11 +1,69 @@
 // vault.js
-// UI-Logik für Passworteinträge (Liste, Suche, Neu, Löschen).
-import { ajaxJSON, authHeader, requireAuthOrRedirect, humanError } from "./common.js";
+// UI-Logik für Passworteinträge (Liste, Suche, Neu, Löschen) — jetzt via GraphQL.
+import { authHeader, requireAuthOrRedirect, humanError } from "./common.js";
 
 const $rows  = () => $("#vaultRows");
 const $empty = () => $("#emptyState");
 const $err   = () => $("#listError");
 let modal;
+
+// ---- GraphQL Endpoint (konfigurierbar) ----
+const GRAPHQL_URL =
+  window.GRAPHQL_URL ||
+  (window.ENV && window.ENV.GRAPHQL_URL) ||
+  "/graphql"; // bei separatem Deployment idealerweise absolute URL setzen
+
+// ---- GraphQL Wrapper (liefert jQuery-Promise, kompatibel zu .done/.fail) ----
+function gql(query, variables = {}) {
+  const d = $.Deferred();
+  fetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(), // enthält Authorization: Bearer <jwt>
+    },
+    body: JSON.stringify({ query, variables }),
+  })
+    .then(async (res) => {
+      let json = {};
+      try { json = await res.json(); } catch {}
+      if (!res.ok) {
+        d.reject({ status: res.status, responseJSON: json });
+        return;
+      }
+      if (json.errors && json.errors.length) {
+        d.reject({ status: 400, responseJSON: { message: json.errors[0].message } });
+        return;
+      }
+      d.resolve(json.data);
+    })
+    .catch((err) => d.reject({ status: 0, responseText: String(err) }));
+  return d.promise();
+}
+
+// ---- GraphQL Operations ----
+const Q_VAULT_ITEMS = `
+  query VaultItems {
+    vaultItems {
+      id title username password url notes createdAt updatedAt
+    }
+  }
+`;
+const M_CREATE = `
+  mutation Create($input: VaultUpsertInput!) {
+    createVaultItem(input: $input) { id }
+  }
+`;
+const M_UPDATE = `
+  mutation Update($id: ID!, $input: VaultUpsertInput!) {
+    updateVaultItem(id: $id, input: $input) { id updatedAt }
+  }
+`;
+const M_DELETE = `
+  mutation Delete($id: ID!) {
+    deleteVaultItem(id: $id)
+  }
+`;
 
 $(function () {
   // Wenn Vault geschützt ist: Login verlangen
@@ -25,9 +83,6 @@ $(function () {
     const data = Object.fromEntries(new FormData(this).entries());
     const isCreate = !data.id;
 
-    const path   = isCreate ? "/vault" : `/vault/${encodeURIComponent(data.id)}`;
-    const method = isCreate ? "POST"   : "PUT";
-
     // Body konsistent zusammenstellen
     const body = {
       title:    (data.title ?? "").trim(),
@@ -37,7 +92,11 @@ $(function () {
       notes:    (data.notes ?? "").trim()
     };
 
-    ajaxJSON(path, method, body)
+    const op = isCreate
+      ? { query: M_CREATE, variables: { input: body } }
+      : { query: M_UPDATE, variables: { id: Number(data.id), input: body } };
+
+    gql(op.query, op.variables)
       .done(() => {
         modal.hide();
         this.reset();
@@ -51,7 +110,7 @@ $(function () {
     if (!id) return;
     if (!confirm("Eintrag wirklich löschen?")) return;
 
-    ajaxJSON(`/vault/${encodeURIComponent(id)}`, "DELETE")
+    gql(M_DELETE, { id: Number(id) })
       .done(() => load())
       .fail(x => alert(humanError(x)));
   });
@@ -62,9 +121,20 @@ $(function () {
 function load(query = "") {
   $err().text("");
 
-  const path = "/vault" + (query ? `?query=${encodeURIComponent(query)}` : "");
-  ajaxJSON(path, "GET")
-    .done(items => renderList(items || []))
+  gql(Q_VAULT_ITEMS)
+    .done(({ vaultItems }) => {
+      let items = vaultItems || [];
+      // Client-seitige Suche (Titel/Username/URL)
+      if (query) {
+        const q = query.toLowerCase();
+        items = items.filter(it =>
+          (it.title || "").toLowerCase().includes(q) ||
+          (it.username || "").toLowerCase().includes(q) ||
+          (it.url || "").toLowerCase().includes(q)
+        );
+      }
+      renderList(items);
+    })
     .fail(x => {
       $rows().empty();
       $empty().addClass("d-none");
@@ -81,12 +151,12 @@ function renderList(items) {
   items.forEach(it => {
     const row = $(`
       <tr>
-        <td class="fw-semibold">${escapeHtml(it.title || "")}</td>
-        <td>${escapeHtml(it.username || "")}</td>
-        <td>${it.url ? `<a href="${escapeAttr(it.url)}" target="_blank" rel="noopener">${escapeHtml(it.url)}</a>` : ""}</td>
-        <td>${it.password ? `<code class="user-select-all">${escapeHtml(it.password)}</code>` : "<span class='text-muted'>—</span>"}</td>
+        <td class="fw-semibold">\${escapeHtml(it.title || "")}</td>
+        <td>\${escapeHtml(it.username || "")}</td>
+        <td>\${it.url ? `<a href="\${escapeAttr(it.url)}" target="_blank" rel="noopener">\${escapeHtml(it.url)}</a>` : ""}</td>
+        <td>\${it.password ? `<code class="user-select-all">\${escapeHtml(it.password)}</code>` : "<span class='text-muted'>—</span>"}</td>
         <td class="text-end">
-          <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${it.id}">Löschen</button>
+          <button class="btn btn-sm btn-outline-danger btn-delete" data-id="\${it.id}">Löschen</button>
         </td>
       </tr>
     `);
@@ -112,4 +182,4 @@ function genPassword() {
 }
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 function escapeHtml(s) { return String(s).replace(/[&<>\"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[m])); }
-function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
+function escapeAttr(s) { return escapeHtml(s).replace(/\"/g, "&quot;"); }
