@@ -12,7 +12,7 @@ let modal;
 // ---- GraphQL Wrapper (liefert jQuery-Promise, kompatibel zu .done/.fail) ----
 function gql(query, variables = {}) {
   const d = $.Deferred();
-  fetch("https://password-graphql.onrender.com", {
+  fetch("https://password-graphql.onrender.com/graphql", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
