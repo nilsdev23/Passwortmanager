@@ -7,7 +7,19 @@ export const GQL_URL = "https://password-graphql.onrender.com/graphql";
 export const BACKEND_URL = "https://password-backend-fc0k.onrender.com";
 
 /** Route zu deiner Login-Seite (für Redirects) */
-export const LOGIN_PATH = "/logon/Logon.html";
+// Centralized app routes
+export const HOME_PATH     = "/homepage.html";
+export const LOGIN_PATH    = "/logon/Logon.html";
+export const LOGOFF_PATH   = "/logon/Logoff.html";
+export const REGISTER_PATH = "/register/Register.html";
+export const SETTINGS_PATH = "/settings/Settings.html";
+
+// Small helper to navigate consistently
+export function goTo(path) {
+  try {
+    window.location.assign(path);
+  } catch {}
+}
 
 /* ===========================
    URL- und Format-Helfer
@@ -82,12 +94,40 @@ export function authHeader() {
 }
 
 /** Auth erzwingen oder zur Login-Seite umleiten */
+const RETURN_KEY = "pm_return";
+
+function setReturnPathIfNeeded() {
+  try {
+    const here = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    // Avoid storing auth-related pages as return targets
+    const blocked = new Set([LOGIN_PATH, REGISTER_PATH, LOGOFF_PATH]);
+    if (!blocked.has(window.location.pathname)) {
+      sessionStorage.setItem(RETURN_KEY, here);
+    }
+  } catch {}
+}
+
+export function popReturnPath() {
+  try {
+    const v = sessionStorage.getItem(RETURN_KEY);
+    sessionStorage.removeItem(RETURN_KEY);
+    return v || "";
+  } catch { return ""; }
+}
+
+export function redirectAfterLogin(defaultPath = HOME_PATH) {
+  const target = popReturnPath();
+  if (target && typeof target === "string") {
+    return goTo(target);
+  }
+  return goTo(defaultPath);
+}
+
 export function requireAuthOrRedirect() {
   const t = getToken();
   if (!t) {
-    try {
-      window.location.href = LOGIN_PATH;
-    } catch {}
+    setReturnPathIfNeeded();
+    goTo(LOGIN_PATH);
     return false;
   }
   return true;

@@ -1,4 +1,4 @@
-import { ajaxJSON, humanError } from "./common.js";
+import { ajaxJSON, humanError, LOGIN_PATH, goTo } from "./common.js";
 
 $(function () {
 
@@ -10,7 +10,7 @@ $(function () {
   const $totpLink = $("#totpLink");
   const $totpSecretWrap = $("#totpSecretWrap");
   const $totpSecret = $("#totpSecret");
-  $(document).on('click', '#btnGoLogin', () => window.location.href = "../logon/Logon.html");
+  $(document).on('click', '#btnGoLogin', () => goTo(LOGIN_PATH));
 
   const isEmail = v => /^\S+@\S+\.\S+$/.test(String(v).trim());
   const busy = on => $btn.prop("disabled", on).text(on ? "Wird angelegt…" : "Konto anlegen");

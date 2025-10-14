@@ -1,4 +1,4 @@
-import { ajaxJSON, setAuth, humanError } from "./common.js";
+import { ajaxJSON, setAuth, humanError, redirectAfterLogin } from "./common.js";
 
 const state = { tmpToken: null };
 
@@ -35,7 +35,9 @@ $(function () {
           $("#formError").text("Kein JWT erhalten.");
           return;
         }
-        window.location.href = "../homepage.html";
+        // persist auth and go where the user came from (or home)
+        try { setAuth(token, null); } catch {}
+        redirectAfterLogin();
       })
       .fail(x => $("#formError").text(humanError(x)));
   });
