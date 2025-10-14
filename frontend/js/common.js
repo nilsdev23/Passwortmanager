@@ -1,142 +1,278 @@
-// ===== Backend-Basis =====
-// Optionales Override via globalem window.API_BASE (z. B. in HTML gesetzt)
-export const API_BASE = (typeof window !== "undefined" && window.API_BASE)
-  ? String(window.API_BASE)
-  : "https://password-backend-fc0k.onrender.com/api";
+/* ===========================
+   common.js  (Frontend Utils)
+   fest verdrahtete Render-URLs
+   =========================== */
 
-// ===== Auth-Storage =====
+/** Feste Endpunkte (testweise direkt angegeben) */
+export const GQL_URL = "https://password-graphql.onrender.com/graphql";
+export const BACKEND_URL = "https://password-backend-fc0k.onrender.com";
+
+/** Login-Seite (falls Redirect nötig) */
+export const LOGIN_PATH = "/login.html";
+
+/** ===========================
+ *  Auth-Storage (mit Legacy-Kompatibilität)
+ *  - Speichert unter "pm_auth" ein JSON: { token, email }
+ *  - Liest zusätzlich legacy "token", falls vorhanden
+ * =========================== */
 const LS_AUTH = "pm_auth"; // { token, email }
 
-// Interner Cache, um Storage-Zugriffe zu minimieren
-let _authCache = null; // { token, email } | null
-
-function readAuthFromStorage() {
+export function getAuth() {
   try {
     const raw = localStorage.getItem(LS_AUTH);
     if (raw) {
       const obj = JSON.parse(raw);
-      if (obj && typeof obj.token === "string") {
-        return { token: obj.token || "", email: obj.email ?? null };
-      }
+      if (obj && typeof obj.token === "string") return obj;
     }
+    // Legacy-Fallback
     const legacy = localStorage.getItem("token");
     if (legacy) return { token: legacy, email: null };
   } catch {}
   return { token: "", email: null };
 }
 
-function writeAuthToStorage(data) {
-  try {
-    localStorage.setItem(LS_AUTH, JSON.stringify(data));
-    // Legacy-Schreibweise beibehalten, damit Altcode nichts bricht
-    localStorage.setItem("token", data.token || "");
-  } catch {}
-}
-
-// Auf Storage-Änderungen aus anderen Tabs reagieren
-if (typeof window !== "undefined" && window.addEventListener) {
-  window.addEventListener("storage", (ev) => {
-    if (ev.key === LS_AUTH || ev.key === "token") {
-      _authCache = null; // beim nächsten Zugriff neu lesen
-    }
-  });
-}
-
-// robust lesen (pm_auth JSON, Fallback: legacy "token")
-export function getAuth() {
-  if (_authCache) return { token: _authCache.token || "", email: _authCache.email ?? null };
-  _authCache = readAuthFromStorage();
-  return { token: _authCache.token || "", email: _authCache.email ?? null };
-}
-
 export function getToken() {
-  const a = getAuth();
-  return a.token || "";
+  return getAuth().token || "";
 }
 
 export function setAuth(token, email) {
-  const data = { token: token || "", email: email ?? null };
-  _authCache = { ...data };
-  writeAuthToStorage(data);
+  const data = { token: token || "", email: email || null };
+  try {
+    localStorage.setItem(LS_AUTH, JSON.stringify(data));
+    // Legacy-Schreibweise beibehalten, damit Altcode weiterhin funktioniert
+    localStorage.setItem("token", data.token);
+  } catch {}
 }
 
 export function clearAuth() {
-  _authCache = { token: "", email: null };
   try {
     localStorage.removeItem(LS_AUTH);
     localStorage.removeItem("token"); // legacy
   } catch {}
 }
 
+/** Authorization-Header erzeugen */
 export function authHeader() {
   const t = getToken();
   return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
-/**
- * ajaxJSON - immer über die zentrale Basis-URL und mit Auth-Header.
- * @param {string} path  Pfad relativ zu API_BASE, z. B. "/vault"
- * @param {string} method HTTP-Methode, default GET
- * @param {object?} body  JSON-Body
- * @param {object?} extra Zusätzliche $.ajax-Optionen
- */
-export function ajaxJSON(path, method = "GET", body, extra = {}) {
-  const opts = {
-    url: API_BASE + path,
-    method,
-    headers: { Accept: "application/json", ...authHeader(), ...(extra.headers || {}) },
-    data: body != null ? JSON.stringify(body) : undefined,
-    contentType: body != null ? "application/json" : undefined,
-    dataType: "json",
-    timeout: extra.timeout ?? 15000,
-    // Wenn ihr statt JWT Cookie-/Session-Auth benutzt, einkommentieren:
-    // xhrFields: { withCredentials: true },
-    ...extra
-  };
-  return $.ajax(opts);
-}
-
-// Kleiner Helper für native-Promise Semantik (await-freundlich)
-function toPromise(jq) {
-  return new Promise((resolve, reject) => {
-    jq.done((data) => resolve(data)).fail((x) => reject(x));
-  });
-}
-
-// Aktuellen Benutzer abfragen (z. B. nach erfolgreichem Login)
-export function fetchMe() {
-  return toPromise(ajaxJSON("/auth/me", "GET"));
-}
-
-/**
- * requireAuthOrRedirect - prüft Token, leitet sonst auf Login um.
- * @param {boolean} force wenn true, immer redirecten
- * @returns {boolean} true, wenn Auth vorhanden
- */
-export function requireAuthOrRedirect(force = false) {
-  const has = !!getToken();
-  if (!has || force) {
-    // Einheitliche Login-URL am Site-Root
-    const target = "/logon/Logon.html";
-    const onLogin = /\/logon\/Logon\.html$/i.test(location.pathname);
-    if (!onLogin) {
-      const next = encodeURIComponent(location.href);
-      location.href = `${target}?next=${next}`;
-    }
-    return false;
+/** ===========================
+ *  JWT-Utilities (optional)
+ * =========================== */
+export function parseJwt(token) {
+  try {
+    const [, payload] = token.split(".");
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
   }
-  return true;
 }
 
-/**
- * humanError - hübsche, menschenlesbare Fehlermeldung aus jQuery-AJAX Fehlerobjekt.
- */
-export function humanError(x) {
-  if (!x) return "Unbekannter Fehler";
-  if (x.responseJSON?.message) return x.responseJSON.message;
-  if (x.responseJSON?.error) return x.responseJSON.error;
-  if (typeof x.responseText === "string" && x.responseText.length < 300) return x.responseText;
-  if (x.status === 0) return "Netzwerkfehler – ist der Server erreichbar?";
-  return `Fehler ${x.status || ""} ${x.statusText || ""}`.trim();
+export function isTokenExpired(token) {
+  const p = parseJwt(token);
+  if (!p || !p.exp) return false; // ohne exp nicht vorzeitig abmelden
+  return Date.now() >= p.exp * 1000;
 }
 
+/** Bei abgelaufenem/fehlendem Token: Logout + optional Redirect */
+export function handleUnauthorized() {
+  clearAuth();
+  try {
+    window.dispatchEvent(new CustomEvent("pm:unauthorized"));
+  } catch {}
+  if (typeof window !== "undefined") {
+    const here = (window.location && window.location.pathname) || "/";
+    if (!here.endsWith(LOGIN_PATH)) {
+      try {
+        window.location.assign(LOGIN_PATH);
+      } catch {}
+    }
+  }
+}
+
+/** ===========================
+ *  GraphQL – Fetch Helper
+ *  - Hängt immer Authorization an (falls vorhanden)
+ *  - Sanitiert HTML-Fehlerseiten (z. B. Render 502)
+ *  - Wirft bei Fehlern eine Error-Instanz mit .graphQLErrors/.data
+ * =========================== */
+export async function gql(query, variables = {}, fetchOptions = {}) {
+  // Vorab: abgelaufene Tokens vermeiden
+  const tok = getToken();
+  if (tok && isTokenExpired(tok)) {
+    handleUnauthorized();
+    throw new Error("Session expired");
+  }
+
+  const res = await fetch(GQL_URL, {
+    method: "POST",
+    mode: "cors",
+    credentials: "omit",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(),
+      ...(fetchOptions.headers || {})
+    },
+    body: JSON.stringify({ query, variables }),
+    ...fetchOptions,
+  });
+
+  // Direktes 401 (selten, aber möglich)
+  if (res.status === 401) {
+    handleUnauthorized();
+    throw new Error("401 UNAUTHORIZED");
+  }
+
+  // Kann bei Proxies in seltenen Fällen HTML liefern – defensiv parsen
+  let payload;
+  const text = await res.text();
+  try {
+    payload = JSON.parse(text);
+  } catch {
+    const msg = `Invalid response from server (${res.status}).`;
+    const err = new Error(msg);
+    err.raw = text;
+    throw err;
+  }
+
+  if (payload.errors && payload.errors.length) {
+    const msg = sanitizeGraphQLErrors(payload.errors);
+    // Heuristik: Unauthorized erkennen und ausloggen
+    if (/unauthor/i.test(msg) || /\b401\b/.test(msg)) {
+      handleUnauthorized();
+    }
+    const err = new Error(msg);
+    err.graphQLErrors = payload.errors;
+    err.data = payload.data;
+    throw err;
+  }
+
+  return payload.data;
+}
+
+/** Kurzhilfen für Queries/Mutations (optional) */
+export const gqlQuery = gql;
+export const gqlMutation = gql;
+
+/** ===========================
+ *  Fehler-Sanitizing / Utilities
+ * =========================== */
+function stripTags(s) {
+  return String(s || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function firstLine(s) {
+  const t = String(s || "");
+  const i = t.indexOf("\n");
+  return i >= 0 ? t.slice(0, i) : t;
+}
+
+export function sanitizeGraphQLErrors(errors) {
+  try {
+    const msgs = errors
+      .map(e => e && (e.message || e.toString()) || "")
+      .map(m => {
+        const looksLikeHtml = /<!DOCTYPE\s+html|<html[\s>]/i.test(m);
+        const sanitized = looksLikeHtml ? "Upstream error" : stripTags(m);
+        return firstLine(sanitized);
+      })
+      .filter(Boolean);
+
+    // Duplikate entfernen und auf sinnvolle Länge kürzen
+    const uniq = Array.from(new Set(msgs)).slice(0, 3);
+    const joined = uniq.join(" | ");
+    return joined.length > 400 ? joined.slice(0, 399) + "…" : joined;
+  } catch {
+    return "Unexpected error";
+  }
+}
+
+/** ===========================
+ *  Bequeme Wrapper für gängige Backend-Operationen über GraphQL
+ *  (Passe die Felder an dein Schema an)
+ * =========================== */
+
+// Viewer (Header-Echo-Test)
+export async function qViewer() {
+  return gql(/* GraphQL */ `
+    query { viewer { id } }
+  `);
+}
+
+// Vault-Operationen
+export async function qVaultItems() {
+  return gql(/* GraphQL */ `
+    query {
+      vaultItems {
+        id
+        title
+        username
+        url
+        notes
+        createdAt
+        updatedAt
+      }
+    }
+  `);
+}
+
+export async function mCreateVaultItem(input) {
+  return gql(/* GraphQL */ `
+    mutation($input: VaultUpsertInput!) {
+      createVaultItem(input: $input) {
+        id
+        title
+        username
+        url
+        notes
+        createdAt
+        updatedAt
+      }
+    }
+  `, { input });
+}
+
+export async function mUpdateVaultItem(id, input) {
+  return gql(/* GraphQL */ `
+    mutation($id: Long!, $input: VaultUpsertInput!) {
+      updateVaultItem(id: $id, input: $input) {
+        id
+        title
+        username
+        url
+        notes
+        createdAt
+        updatedAt
+      }
+    }
+  `, { id, input });
+}
+
+export async function mDeleteVaultItem(id) {
+  return gql(/* GraphQL */ `
+    mutation($id: Long!) {
+      deleteVaultItem(id: $id)
+    }
+  `, { id });
+}
+
+/** ===========================
+ *  Globale Exporte (falls ohne Module verwendet)
+ * =========================== */
+try {
+  if (typeof window !== "undefined") {
+    window.PM = Object.assign(window.PM || {}, {
+      // Konstanten
+      GQL_URL, BACKEND_URL, LOGIN_PATH,
+      // Auth
+      getAuth, getToken, setAuth, clearAuth, authHeader,
+      parseJwt, isTokenExpired, handleUnauthorized,
+      // GraphQL
+      gql, gqlQuery, gqlMutation,
+      sanitizeGraphQLErrors,
+      // Convenience
+      qViewer, qVaultItems, mCreateVaultItem, mUpdateVaultItem, mDeleteVaultItem,
+    });
+  }
+} catch {}
