@@ -1,23 +1,16 @@
 // ===== Backend-Basis =====
-// Optionales Override via globalem window.API_BASE (z. B. in HTML gesetzt)
-export const API_BASE = (typeof window !== "undefined" && window.API_BASE)
-  ? String(window.API_BASE)
-  : "https://password-backend-fc0k.onrender.com/api";
+export const API_BASE = "https://password-backend-fc0k.onrender.com/api";
 
 // ===== Auth-Storage =====
 const LS_AUTH = "pm_auth"; // { token, email }
 
-// Interner Cache, um Storage-Zugriffe zu minimieren
-let _authCache = null; // { token, email } | null
-
-function readAuthFromStorage() {
+// robust lesen (pm_auth JSON, Fallback: legacy "token")
+export function getAuth() {
   try {
     const raw = localStorage.getItem(LS_AUTH);
     if (raw) {
       const obj = JSON.parse(raw);
-      if (obj && typeof obj.token === "string") {
-        return { token: obj.token || "", email: obj.email ?? null };
-      }
+      if (obj && typeof obj.token === "string") return obj;
     }
     const legacy = localStorage.getItem("token");
     if (legacy) return { token: legacy, email: null };
@@ -25,43 +18,20 @@ function readAuthFromStorage() {
   return { token: "", email: null };
 }
 
-function writeAuthToStorage(data) {
-  try {
-    localStorage.setItem(LS_AUTH, JSON.stringify(data));
-    // Legacy-Schreibweise beibehalten, damit Altcode nichts bricht
-    localStorage.setItem("token", data.token || "");
-  } catch {}
-}
-
-// Auf Storage-Änderungen aus anderen Tabs reagieren
-if (typeof window !== "undefined" && window.addEventListener) {
-  window.addEventListener("storage", (ev) => {
-    if (ev.key === LS_AUTH || ev.key === "token") {
-      _authCache = null; // beim nächsten Zugriff neu lesen
-    }
-  });
-}
-
-// robust lesen (pm_auth JSON, Fallback: legacy "token")
-export function getAuth() {
-  if (_authCache) return { token: _authCache.token || "", email: _authCache.email ?? null };
-  _authCache = readAuthFromStorage();
-  return { token: _authCache.token || "", email: _authCache.email ?? null };
-}
-
 export function getToken() {
-  const a = getAuth();
-  return a.token || "";
+  return getAuth().token || "";
 }
 
 export function setAuth(token, email) {
-  const data = { token: token || "", email: email ?? null };
-  _authCache = { ...data };
-  writeAuthToStorage(data);
+  const data = { token: token || "", email: email || null };
+  try {
+    localStorage.setItem(LS_AUTH, JSON.stringify(data));
+    // Legacy-Schreibweise beibehalten, damit Altcode nichts bricht:
+    localStorage.setItem("token", data.token);
+  } catch {}
 }
 
 export function clearAuth() {
-  _authCache = { token: "", email: null };
   try {
     localStorage.removeItem(LS_AUTH);
     localStorage.removeItem("token"); // legacy
@@ -73,9 +43,10 @@ export function authHeader() {
   return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
+
 /**
  * ajaxJSON - immer über die zentrale Basis-URL und mit Auth-Header.
- * @param {string} path  Pfad relativ zu API_BASE, z. B. "/vault"
+ * @param {string} path  Pfad relativ zu API_BASE, z.B. "/vault"
  * @param {string} method HTTP-Methode, default GET
  * @param {object?} body  JSON-Body
  * @param {object?} extra Zusätzliche $.ajax-Optionen
@@ -84,28 +55,15 @@ export function ajaxJSON(path, method = "GET", body, extra = {}) {
   const opts = {
     url: API_BASE + path,
     method,
-    headers: { Accept: "application/json", ...authHeader(), ...(extra.headers || {}) },
+    headers: { ...authHeader(), ...(extra.headers || {}) },
     data: body != null ? JSON.stringify(body) : undefined,
     contentType: body != null ? "application/json" : undefined,
     dataType: "json",
-    timeout: extra.timeout ?? 15000,
     // Wenn ihr statt JWT Cookie-/Session-Auth benutzt, einkommentieren:
     // xhrFields: { withCredentials: true },
     ...extra
   };
   return $.ajax(opts);
-}
-
-// Kleiner Helper für native-Promise Semantik (await-freundlich)
-function toPromise(jq) {
-  return new Promise((resolve, reject) => {
-    jq.done((data) => resolve(data)).fail((x) => reject(x));
-  });
-}
-
-// Aktuellen Benutzer abfragen (z. B. nach erfolgreichem Login)
-export function fetchMe() {
-  return toPromise(ajaxJSON("/auth/me", "GET"));
 }
 
 /**
@@ -116,10 +74,8 @@ export function fetchMe() {
 export function requireAuthOrRedirect(force = false) {
   const has = !!getToken();
   if (!has || force) {
-    // Einheitliche Login-URL am Site-Root
-    const target = "/logon/Logon.html";
-    const onLogin = /\/logon\/Logon\.html$/i.test(location.pathname);
-    if (!onLogin) {
+    const target = "/login.html";
+    if (location.pathname !== target) {
       const next = encodeURIComponent(location.href);
       location.href = `${target}?next=${next}`;
     }
@@ -139,4 +95,3 @@ export function humanError(x) {
   if (x.status === 0) return "Netzwerkfehler – ist der Server erreichbar?";
   return `Fehler ${x.status || ""} ${x.statusText || ""}`.trim();
 }
-
