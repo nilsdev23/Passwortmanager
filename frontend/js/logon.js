@@ -35,13 +35,6 @@ $(function () {
           $("#formError").text("Kein JWT erhalten.");
           return;
         }
-        // optional: Userdaten nachladen
-        try {
-          const me = await fetchMe();
-          setAuth(token, me?.email || me?.username || null);
-        } catch {
-          setAuth(token, null);
-        }
         window.location.href = "../homepage.html";
       })
       .fail(x => $("#formError").text(humanError(x)));
