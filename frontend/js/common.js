@@ -6,8 +6,11 @@
 export const GQL_URL = "https://password-graphql.onrender.com/graphql";
 export const BACKEND_URL = "https://password-backend-fc0k.onrender.com";
 
+/** REST-Prefix deines Backends */
+export const API_PREFIX = "/api";
+
 /** Route zu deiner Login-Seite (für Redirects) */
-// Centralized app routes
+/** Centralized app routes */
 export const HOME_PATH     = "/homepage.html";
 export const LOGIN_PATH    = "/logon/Logon.html";
 export const LOGOFF_PATH   = "/logon/Logoff.html";
@@ -40,11 +43,26 @@ function joinUrl(base, path) {
   return `${b}${pNorm}`;
 }
 
+function ensureLeadingSlash(p) {
+  return p.startsWith("/") ? p : `/${p}`;
+}
+
 /** Normalisiert alles, was zur Backend-API soll */
 function normalizeApiPath(path) {
-  // Akzeptiere absolute URLs, "/api/..." und "api/..."
+  // 1) absolute URL bleibt unverändert
   if (isAbsoluteHttpUrl(path)) return path;
-  return joinUrl(BACKEND_URL, path);
+
+  // 2) führenden Slash sicherstellen
+  let p = ensureLeadingSlash(String(path || ""));
+
+  // 3) falls kein /api-Prefix vorhanden, hinzufügen
+  const hasApiPrefix = (p === API_PREFIX) || p.startsWith(`${API_PREFIX}/`);
+  if (!hasApiPrefix) {
+    p = `${API_PREFIX}${p}`;
+  }
+
+  // 4) an BACKEND_URL anhängen
+  return joinUrl(BACKEND_URL, p);
 }
 
 /* ===========================
@@ -153,7 +171,7 @@ function asJQStyle(promise) {
    REST-Helper (JSON) via fetch
 =========================== */
 export function ajaxJSON(path, method = "GET", body) {
-  const url = normalizeApiPath(path); // robust gegen "api/..." und "/api/..."
+  const url = normalizeApiPath(path); // fügt automatisch /api hinzu
   const isBody = body !== undefined && body !== null;
 
   const p = (async () => {
@@ -272,7 +290,4 @@ export function humanError(e) {
   return e.message || "Fehler";
 }
 
-/** Optional: bequemer Builder für API-URLs in Aufrufern */
-export function api(path) {
-  return normalizeApiPath(path);
-}
+
