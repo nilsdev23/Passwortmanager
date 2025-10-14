@@ -3,13 +3,28 @@ import { gql, requireAuthOrRedirect, humanError } from "./common.js";
 $(async function () {
   if (!requireAuthOrRedirect()) return;
 
-  const $tbody = $("#vaultTable tbody");
-  const $error = $("#homeError");
-  const $form  = $("#formAddVault");
+  const $rows   = $("#vaultRows");
+  const $errLst = $("#listError");
+  const $empty  = $("#emptyState");
+  const $form   = $("#formItem");
+  const $modalEl = document.getElementById("pwModal");
+  const BS = window.bootstrap || undefined;
+  const modal = BS ? new BS.Modal($modalEl) : null;
+
+  $("#btnReload").on("click", () => load());
+  $("#btnAdd").on("click", () => {
+    resetForm();
+    $("#modalError").text("");
+    if (modal) modal.show();
+  });
+  $("#btnGen").on("click", () => {
+    const pwd = genPassword(16);
+    $form.find('input[name="password"]').val(pwd);
+  });
 
   async function load() {
     try {
-      $error.text("");
+      $errLst.text("");
       const data = await gql(/* GraphQL */ `
         query {
           vaultItems {
@@ -20,37 +35,36 @@ $(async function () {
             url
             notes
             createdAt
-            updatedAt
           }
         }
       `);
       render(data.vaultItems || []);
     } catch (e) {
-      $error.text(humanError(e));
+      $errLst.text(humanError(e));
     }
   }
 
   function render(items) {
-    $tbody.empty();
+    $rows.empty();
     if (!items.length) {
-      $tbody.append(`<tr><td colspan="6" class="text-muted">Keine Einträge vorhanden.</td></tr>`);
+      $empty.removeClass("d-none");
       return;
     }
+    $empty.addClass("d-none");
     for (const it of items) {
       const tr = $(`
         <tr data-id="${it.id}">
           <td>${escapeHtml(it.title || "")}</td>
           <td>${escapeHtml(it.username || "")}</td>
           <td>${escapeHtml(it.url || "")}</td>
-          <td>${escapeHtml(it.notes || "")}</td>
-          <td>${it.createdAt ? new Date(it.createdAt).toLocaleString() : ""}</td>
-          <td class="text-right">
+          <td>••••••</td>
+          <td class="text-end">
             <button class="btn btn-sm btn-outline-danger btn-delete">Löschen</button>
           </td>
         </tr>
       `);
       tr.find(".btn-delete").on("click", () => del(it.id));
-      $tbody.append(tr);
+      $rows.append(tr);
     }
   }
 
@@ -64,13 +78,13 @@ $(async function () {
       `, { id: String(id) });
       await load();
     } catch (e) {
-      $error.text(humanError(e));
+      $errLst.text(humanError(e));
     }
   }
 
   $form.on("submit", async function (e) {
     e.preventDefault();
-    $error.text("");
+    $("#modalError").text("");
 
     const body = Object.fromEntries(new FormData(this).entries());
     const input = {
@@ -84,25 +98,41 @@ $(async function () {
     try {
       await gql(/* GraphQL */ `
         mutation($input: VaultUpsertInput!) {
-          createVaultItem(input: $input) {
-            id
-          }
+          createVaultItem(input: $input) { id }
         }
       `, { input });
-      (this).reset();
+      resetForm();
+      if (modal) modal.hide();
       await load();
     } catch (e) {
-      $error.text(humanError(e));
+      $("#modalError").text(humanError(e));
     }
   });
 
-  // tiny helper
+  function resetForm() {
+    $form[0]?.reset();
+    $form.find('input[name="id"]').val("");
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
     }[c]));
   }
 
-  // initial load
+  function genPassword(len = 16) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*()_-+=:";
+    let out = "";
+    const arr = new Uint32Array(len);
+    if (window.crypto?.getRandomValues) {
+      window.crypto.getRandomValues(arr);
+      for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
+    } else {
+      for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return out;
+  }
+
   await load();
 });
+
