@@ -1,4 +1,4 @@
-import { ajaxJSON, setAuth, fetchMe, humanError } from "./common.js";
+import { ajaxJSON, setAuth, humanError } from "./common.js";
 
 const state = { tmpToken: null };
 
