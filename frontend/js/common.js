@@ -170,7 +170,7 @@ function asJQStyle(promise) {
 /* ===========================
    REST-Helper (JSON) via fetch
 =========================== */
-export function ajaxJSON(path, method = "GET", body) {
+export function ajaxJSON(path, method, body) {
   const url = normalizeApiPath(path); // fügt automatisch /api hinzu
   const isBody = body !== undefined && body !== null;
 
