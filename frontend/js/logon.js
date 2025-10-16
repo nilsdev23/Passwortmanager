@@ -7,7 +7,7 @@ $(function () {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(this).entries());
 
-    ajaxJSON("/auth/login", "POST", body)
+    ajaxJSON("/auth/login", body)
       .done(res => {
         // Backend liefert tmpToken
         state.tmpToken = res?.tmpToken;
@@ -28,7 +28,7 @@ $(function () {
       return;
     }
 
-    ajaxJSON("/auth/totp-verify", "POST", { tmpToken: state.tmpToken, code })
+    ajaxJSON("/auth/totp-verify", { tmpToken: state.tmpToken, code })
       .done(async res => {
         const token = res?.token;
         if (!token) {

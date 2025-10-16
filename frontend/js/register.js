@@ -36,7 +36,7 @@ $(function () {
     if (msg) { $err.text(msg); return; }
 
     busy(true);
-    ajaxJSON(`/auth/register`, "POST", { email, password: pw })
+    ajaxJSON(`/auth/register`, { email, password: pw })
       .done(res => {
   // Erfolgreich: zeige QR-Code oder Link aus dem Backend-Response
   const uri = res?.totpProvisioningUri || res?.totpUri || res?.otpauth || res?.otpauthUrl || res?.otpauth_url;

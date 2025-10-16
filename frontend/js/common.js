@@ -170,22 +170,32 @@ function asJQStyle(promise) {
 /* ===========================
    REST-Helper (JSON) via fetch
 =========================== */
-export function ajaxJSON(path, method, body) {
+export function ajaxJSON(path, methodOrBody, body) {
   const url = normalizeApiPath(path); // fügt automatisch /api hinzu
+
+  // Flexible Aufrufvarianten zulassen:
+  // - ajaxJSON(path)
+  // - ajaxJSON(path, method)
+  // - ajaxJSON(path, method, body)
+  // - ajaxJSON(path, body)
+  let method = methodOrBody;
+  if (methodOrBody && typeof methodOrBody === "object" && !Array.isArray(methodOrBody)) {
+    body = methodOrBody;
+    method = undefined;
+  }
   const isBody = body !== undefined && body !== null;
 
   const p = (async () => {
     let res;
     try {
+      const headers = { ...authHeader() };
+      if (isBody) headers["Content-Type"] = "application/json";
+
       res = await fetch(url, {
-        method,
+        method: method || (isBody ? "POST" : "GET"),
         mode: "cors",
         credentials: "omit",
-        headers: {
-          "Content-Type": "application/json",
-          // Token wird immer mitgeschickt; Public-Endpoints ignorieren ihn
-          ...authHeader(),
-        },
+        headers,
         body: isBody ? JSON.stringify(body) : undefined,
         redirect: "follow",
       });
@@ -275,7 +285,7 @@ export async function gql(query, variables = {}) {
 =========================== */
 export function fetchMe() {
   // gibt Promise/Thenable zurück → await oder .done möglich
-  return ajaxJSON("/auth/me", "GET");
+  return ajaxJSON("/auth/me");
 }
 
 /* ===========================
