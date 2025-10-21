@@ -3,13 +3,13 @@ import { gql, requireAuthOrRedirect, humanError } from "./common.js";
 $(async function () {
   if (!requireAuthOrRedirect()) return;
 
-  const $rows   = $("#vaultRows");
-  const $errLst = $("#listError");
-  const $empty  = $("#emptyState");
-  const $form   = $("#formItem");
+  const $rows    = $("#vaultRows");
+  const $errLst  = $("#listError");
+  const $empty   = $("#emptyState");
+  const $form    = $("#formItem");
   const $modalEl = document.getElementById("pwModal");
-  const BS = window.bootstrap || undefined;
-  const modal = BS ? new BS.Modal($modalEl) : null;
+  const BS       = window.bootstrap || undefined;
+  const modal    = BS ? new BS.Modal($modalEl) : null;
 
   $("#btnReload").on("click", () => load());
   $("#btnAdd").on("click", () => {
@@ -22,22 +22,41 @@ $(async function () {
     $form.find('input[name="password"]').val(pwd);
   });
 
+  // --- GraphQL Operations (Schema: *_enc + VaultUpsertEncInput) ---
+  const Q_VAULT_ITEMS = /* GraphQL */ `
+    query {
+      vaultItems {
+        id
+        titleEnc
+        usernameEnc
+        passwordEnc
+        urlEnc
+        notesEnc
+        createdAt
+        updatedAt
+      }
+    }
+  `;
+  const M_CREATE = /* GraphQL */ `
+    mutation($input: VaultUpsertEncInput!) {
+      createVaultItem(input: $input) { id }
+    }
+  `;
+  const M_UPDATE = /* GraphQL */ `
+    mutation($id: ID!, $input: VaultUpsertEncInput!) {
+      updateVaultItem(id: $id, input: $input) { id }
+    }
+  `;
+  const M_DELETE = /* GraphQL */ `
+    mutation($id: ID!) {
+      deleteVaultItem(id: $id)
+    }
+  `;
+
   async function load() {
     try {
       $errLst.text("");
-      const data = await gql(/* GraphQL */ `
-        query {
-          vaultItems {
-            id
-            title
-            username
-            password
-            url
-            notes
-            createdAt
-          }
-        }
-      `);
+      const data = await gql(Q_VAULT_ITEMS);
       render(data.vaultItems || []);
     } catch (e) {
       $errLst.text(humanError(e));
@@ -51,31 +70,43 @@ $(async function () {
       return;
     }
     $empty.addClass("d-none");
+
     for (const it of items) {
       const tr = $(`
         <tr data-id="${it.id}">
-          <td>${escapeHtml(it.title || "")}</td>
-          <td>${escapeHtml(it.username || "")}</td>
-          <td>${escapeHtml(it.url || "")}</td>
+          <td>${escapeHtml(it.titleEnc || "")}</td>
+          <td>${escapeHtml(it.usernameEnc || "")}</td>
+          <td>${escapeHtml(it.urlEnc || "")}</td>
           <td>••••••</td>
           <td class="text-end">
+            <button class="btn btn-sm btn-outline-secondary me-1 btn-edit">Bearbeiten</button>
             <button class="btn btn-sm btn-outline-danger btn-delete">Löschen</button>
           </td>
         </tr>
       `);
+
+      tr.find(".btn-edit").on("click", () => edit(it));
       tr.find(".btn-delete").on("click", () => del(it.id));
       $rows.append(tr);
     }
   }
 
+  function edit(item) {
+    // Formular mit vorhandenen Werten füllen (Enc-Felder bleiben Enc – Server verschlüsselt ggf. erneut/erkennt Format)
+    $form.find('input[name="id"]').val(String(item.id));
+    $form.find('input[name="title"]').val(item.titleEnc || "");
+    $form.find('input[name="username"]').val(item.usernameEnc || "");
+    $form.find('input[name="password"]').val(item.passwordEnc || "");
+    $form.find('input[name="url"]').val(item.urlEnc || "");
+    $form.find('textarea[name="notes"]').val(item.notesEnc || "");
+    $("#modalError").text("");
+    if (modal) modal.show();
+  }
+
   async function del(id) {
     if (!confirm("Eintrag wirklich löschen?")) return;
     try {
-      await gql(/* GraphQL */ `
-        mutation($id: ID!) {
-          deleteVaultItem(id: $id)
-        }
-      `, { id: String(id) });
+      await gql(M_DELETE, { id: String(id) });
       await load();
     } catch (e) {
       $errLst.text(humanError(e));
@@ -87,25 +118,28 @@ $(async function () {
     $("#modalError").text("");
 
     const body = Object.fromEntries(new FormData(this).entries());
+    // Mapping auf *_enc – der Server speichert immer verschlüsselt (und erkennt schon verschlüsselte Werte)
     const input = {
-      title: body.title || "",
-      username: body.username || "",
-      password: body.password || "",
-      url: body.url || "",
-      notes: body.notes || ""
+      titleEnc: body.title || "",
+      usernameEnc: body.username || "",
+      passwordEnc: body.password || "",
+      urlEnc: body.url || "",
+      notesEnc: body.notes || ""
     };
 
+    const id = (body.id || "").trim();
+
     try {
-      await gql(/* GraphQL */ `
-        mutation($input: VaultUpsertInput!) {
-          createVaultItem(input: $input) { id }
-        }
-      `, { input });
+      if (id) {
+        await gql(M_UPDATE, { id: String(id), input });
+      } else {
+        await gql(M_CREATE, { input });
+      }
       resetForm();
       if (modal) modal.hide();
       await load();
-    } catch (e) {
-      $("#modalError").text(humanError(e));
+    } catch (e2) {
+      $("#modalError").text(humanError(e2));
     }
   });
 
@@ -135,4 +169,3 @@ $(async function () {
 
   await load();
 });
-
