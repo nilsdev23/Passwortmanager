@@ -300,4 +300,41 @@ export function humanError(e) {
   return e.message || "Fehler";
 }
 
+export function isLoggedIn(){
+  return !!localStorage.getItem('session_token') || !!localStorage.getItem('session_email');
+}
+/**
+ * Leitet auf die Login-Seite um, wenn keine Session vorhanden ist.
+ * Rückgabe: false = Redirect ausgeführt; true=Seite darf weiterlaufen.
+ */
+export function requireAuthOrRedirect(loginHref = '/logon/Logon.html') {
+  if (!isLoggedIn()) {
+    window.location.replace(loginHref); // absoluter Pfad vermeidet ../-Probleme
+    return false;
+  }
+  return true;
+}
 
+/** Navbar für Unangemeldete: nur Login & Registrieren anzeigen */
+export function lockUnauthedNavbar() {
+  if (isLoggedIn()) return;
+  const nav = document.querySelector('.navbar .navbar-nav');
+  if (nav) {
+    nav.innerHTML = `
+      <li class="nav-item"><a class="nav-link" href="/logon/Logon.html">Login</a></li>
+      <li class="nav-item"><a class="nav-link" href="/register/Register.html">Registrieren</a></li>
+    `;
+  }
+}
+
+/** Klick auf Brand-Logo: Unangemeldete werden zum Login geschickt */
+export function guardBrandLink() {
+  const brand = document.querySelector('.navbar-brand');
+  if (!brand) return;
+  brand.addEventListener('click', (e) => {
+    if (!isLoggedIn()) {
+      e.preventDefault();
+      window.location.href = '/logon/Logon.html';
+    }
+  });
+}
