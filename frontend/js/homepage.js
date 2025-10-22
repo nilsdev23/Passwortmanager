@@ -1,5 +1,9 @@
 import { gql, requireAuthOrRedirect, humanError } from "./common.js";
 
+if (!requireAuthOrRedirect('/logon/Logon.html')) {
+  throw new Error('Redirecting to login'); // verhindert, dass restlicher Code noch läuft
+}
+
 $(async function () {
   if (!requireAuthOrRedirect()) return;
 
