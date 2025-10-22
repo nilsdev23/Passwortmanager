@@ -124,5 +124,10 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script type="module" src="./js/common.js"></script>
   <script type="module" src="./js/homepage.js"></script>
+  <script type="module">
+  import { lockUnauthedNavbar, guardBrandLink } from "./js/common.js";
+  lockUnauthedNavbar();
+  guardBrandLink();
+</script>
 </body>
 </html>
