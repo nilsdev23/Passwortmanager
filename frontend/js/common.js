@@ -338,3 +338,25 @@ export function guardBrandLink() {
     }
   });
 }
+
+export function setupNavbarForAuth() {
+  if (!isLoggedIn()) return;
+
+  const nav = document.querySelector('.navbar .navbar-nav');
+  if (!nav) return;
+
+  // Bestehende Einträge entfernen (Login/Registrieren)
+  nav.innerHTML = `
+    <li class="nav-item"><a class="nav-link" href="/homepage.html">Tresor</a></li>
+    <li class="nav-item"><a class="nav-link" href="/settings/Settings.html">Einstellungen</a></li>
+    <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Abmelden</a></li>
+  `;
+
+  // Klick auf Logout-Link
+  const logout = document.getElementById('logoutLink');
+  logout?.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearAuth(); // deine bestehende Funktion aus common.js
+    window.location.href = '/logon/Logon.html';
+  });
+}

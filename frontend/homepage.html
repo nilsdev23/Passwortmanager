@@ -129,5 +129,10 @@
   lockUnauthedNavbar();
   guardBrandLink();
 </script>
+<script type="module">
+  import { setupNavbarForAuth, guardBrandLink } from "./js/common.js";
+  setupNavbarForAuth();
+  guardBrandLink();
+</script>
 </body>
 </html>
