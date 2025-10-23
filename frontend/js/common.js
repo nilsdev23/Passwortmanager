@@ -303,17 +303,8 @@ export function humanError(e) {
 export function isLoggedIn(){
   return !!localStorage.getItem('session_token') || !!localStorage.getItem('session_email');
 }
-/**
- * Leitet auf die Login-Seite um, wenn keine Session vorhanden ist.
- * Rückgabe: false = Redirect ausgeführt; true=Seite darf weiterlaufen.
- */
-export function requireAuthOrRedirect(loginHref = '/logon/Logon.html') {
-  if (!isLoggedIn()) {
-    window.location.replace(loginHref); // absoluter Pfad vermeidet ../-Probleme
-    return false;
-  }
-  return true;
-}
+
+
 
 /** Navbar für Unangemeldete: nur Login & Registrieren anzeigen */
 export function lockUnauthedNavbar() {
