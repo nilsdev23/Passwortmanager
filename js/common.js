@@ -331,23 +331,27 @@ export function guardBrandLink() {
 }
 
 export function setupNavbarForAuth() {
-  if (!isLoggedIn()) return;
-
-  const nav = document.querySelector('.navbar .navbar-nav');
+  const nav = document.querySelector(".navbar .navbar-nav");
   if (!nav) return;
 
-  // Bestehende Einträge entfernen (Login/Registrieren)
-  nav.innerHTML = `
-    <li class="nav-item"><a class="nav-link" href="/homepage.html">Tresor</a></li>
-    <li class="nav-item"><a class="nav-link" href="/settings/Settings.html">Einstellungen</a></li>
-    <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Abmelden</a></li>
-  `;
+  if (isLoggedIn()) {
+    // Eingeloggt: Login/Registrieren ausblenden, Einstellungen + Abmelden anzeigen
+    nav.innerHTML = `
+      <li class="nav-item"><a class="nav-link" href="/homepage.html">Tresor</a></li>
+      <li class="nav-item"><a class="nav-link" href="/settings/Settings.html">Einstellungen</a></li>
+      <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Abmelden</a></li>
+    `;
 
-  // Klick auf Logout-Link
-  const logout = document.getElementById('logoutLink');
-  logout?.addEventListener('click', (e) => {
-    e.preventDefault();
-    clearAuth(); // deine bestehende Funktion aus common.js
-    window.location.href = '/logon/Logon.html';
-  });
+    document.getElementById("logoutLink")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      clearAuth();
+      window.location.href = "/logon/Logon.html";
+    });
+  } else {
+    // Ausgeloggt: nur Login & Registrieren
+    nav.innerHTML = `
+      <li class="nav-item"><a class="nav-link" href="/logon/Logon.html">Login</a></li>
+      <li class="nav-item"><a class="nav-link" href="/register/Register.html">Registrieren</a></li>
+    `;
+  }
 }
