@@ -10,13 +10,22 @@
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
-    <div class="container">
-      <a class="navbar-brand" href="../homepage.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
-      <div class="ms-auto">
-        <a class="btn btn-outline-secondary btn-sm" href="../logon/Logoff.html">Logout</a>
-      </div>
+  <div class="container">
+    <a class="navbar-brand" href="../homepage.html">
+      <strong style="color:var(--brand)">Passwort</strong>manager
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <!-- 🔽 Platzhalter für dynamische Navbar -->
+      <ul class="navbar-nav ms-auto">
+        <!-- setupNavbarForAuth() füllt diesen Bereich automatisch -->
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <main class="container">
     <!-- TOTP -->
@@ -69,5 +78,13 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script type="module" src="../js/common.js"></script>
   <script type="module" src="../js/settings.js"></script>
+  
+<script type="module">
+  import { setupNavbarForAuth, requireAuthOrRedirect } from "../js/common.js";
+  requireAuthOrRedirect();
+  setupNavbarForAuth();
+</script>
+
+
 </body>
 </html>

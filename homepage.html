@@ -9,23 +9,24 @@
   <link rel="stylesheet" href="./css/bootstrap.min.css">
   <link rel="stylesheet" href="./css/styles.css">
 </head>
+
 <body>
   <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
-    <div class="container">
-      <a class="navbar-brand" href="./homepage.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="nav">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link" href="./logon/Logon.html">Login</a></li>
-          <li class="nav-item"><a class="nav-link" href="./register/Register.html">Registrieren</a></li>
-          <li class="nav-item"><a class="nav-link" href="./settings/Settings.html">Einstellungen</a></li>
-        </ul>
-      </div>
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
+  <div class="container">
+    <a class="navbar-brand" href="./homepage.html"><strong style="color:var(--brand)">Passwort</strong>manager</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <!-- 🔽 Diese UL bleibt als Platzhalter für die Navbar-Buttons -->
+      <ul class="navbar-nav ms-auto">
+        <!-- setupNavbarForAuth() füllt diesen Bereich dynamisch -->
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <!-- Hauptinhalt -->
   <main class="container">
@@ -129,10 +130,15 @@
   lockUnauthedNavbar();
   guardBrandLink();
 </script>
+
+
 <script type="module">
-  import { setupNavbarForAuth, guardBrandLink } from "./js/common.js";
+  import { setupNavbarForAuth, requireAuthOrRedirect } from "./js/common.js";
+  // Seite erfordert Login:
+  requireAuthOrRedirect();
+  // Navbar anhand Login-Status rendern:
   setupNavbarForAuth();
-  guardBrandLink();
 </script>
+
 </body>
 </html>

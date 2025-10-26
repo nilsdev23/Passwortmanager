@@ -300,9 +300,10 @@ export function humanError(e) {
   return e.message || "Fehler";
 }
 
-export function isLoggedIn(){
-  return !!localStorage.getItem('session_token') || !!localStorage.getItem('session_email');
+export function isLoggedIn() {
+  return !!getToken(); // nutzt pm_auth aus getAuth()
 }
+
 
 
 
@@ -335,23 +336,20 @@ export function setupNavbarForAuth() {
   if (!nav) return;
 
   if (isLoggedIn()) {
-    // Eingeloggt: Login/Registrieren ausblenden, Einstellungen + Abmelden anzeigen
     nav.innerHTML = `
       <li class="nav-item"><a class="nav-link" href="/homepage.html">Tresor</a></li>
-      <li class="nav-item"><a class="nav-link" href="/settings/Settings.html">Einstellungen</a></li>
-      <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Abmelden</a></li>
+      <li class="nav-item"><a class="nav-link" href="/settings/Settings.html">Settings</a></li>
+      <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Logout</a></li>
     `;
-
     document.getElementById("logoutLink")?.addEventListener("click", (e) => {
       e.preventDefault();
       clearAuth();
       window.location.href = "/logon/Logon.html";
     });
   } else {
-    // Ausgeloggt: nur Login & Registrieren
     nav.innerHTML = `
       <li class="nav-item"><a class="nav-link" href="/logon/Logon.html">Login</a></li>
-      <li class="nav-item"><a class="nav-link" href="/register/Register.html">Registrieren</a></li>
+      <li class="nav-item"><a class="nav-link" href="/register/Register.html">Register</a></li>
     `;
   }
 }
