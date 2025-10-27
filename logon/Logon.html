@@ -10,44 +10,61 @@
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
-  <div class="container">
-    <a class="navbar-brand" href="../homepage.html">
-      <strong style="color:var(--brand)">Passwort</strong>manager
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="nav">
-      <!-- 🔽 Platzhalter für dynamische Navbar -->
-      <ul class="navbar-nav ms-auto">
-        <!-- setupNavbarForAuth() füllt diesen Bereich automatisch -->
-      </ul>
-    </div>
-  </div>
-</nav>
+    <div class="container">
+      <a class="navbar-brand" href="../homepage.html">
+        <strong style="color:var(--brand)">Passwort</strong>manager
+      </a>
 
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <!-- 🔽 Platzhalter für dynamische Navbar -->
+        <ul class="navbar-nav ms-auto">
+          <!-- setupNavbarForAuth() füllt diesen Bereich automatisch -->
+        </ul>
+      </div>
+    </div>
+  </nav>
 
   <main class="container">
     <div class="card p-4 mx-auto" style="max-width:520px">
       <h1 class="h4 mb-3">Anmelden</h1>
+
+      <!-- Standard Login (E-Mail + Passwort) -->
       <form id="formLogin" class="vstack gap-2">
         <div>
           <label class="form-label">E-Mail</label>
-          <input class="form-control" name="email" type="email" required />
+          <input class="form-control" type="email" name="email" autocomplete="username" required />
         </div>
         <div>
           <label class="form-label">Passwort</label>
-          <input class="form-control" name="password" type="password" required />
+          <input class="form-control" type="password" name="password" autocomplete="current-password" required />
         </div>
-        <button class="btn btn-primary mt-2" type="submit">Login</button>
+        <div class="d-grid">
+          <button class="btn btn-primary" type="submit">Anmelden</button>
+        </div>
+        <div id="formError" class="text-danger small mt-2"></div>
       </form>
 
-      <div id="totpStep" class="card mt-3 p-3 d-none">
-        <h2 class="h6">TOTP-Code</h2>
-        <form id="formTotp" class="vstack gap-2">
-          <input class="form-control" name="code" inputmode="numeric" placeholder="123456" required />
-          <button class="btn btn-primary" type="submit">Prüfen</button>
-        </form>
+      <!-- 2FA Schritt -->
+      <form id="formTotp" class="vstack gap-2 mt-3" style="display:none">
+        <div class="alert alert-info py-2">
+          Bitte gib deinen 6-stelligen TOTP-Code ein.
+        </div>
+        <div>
+          <label class="form-label">TOTP-Code</label>
+          <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\\d{6}" maxlength="6" required />
+        </div>
+        <div class="d-grid">
+          <button class="btn btn-primary" type="submit">Bestätigen</button>
+        </div>
+        <div id="totpError" class="text-danger small mt-2"></div>
+      </form>
+
+      <!-- Divider -->
+      <div class="text-center my-3">
+        <div class="d-inline-block px-3 text-muted small">oder</div>
       </div>
 
       
@@ -71,13 +88,19 @@
         </div>
       </div>
 
-      <div id="formError" class="text-danger small mt-2"></div>
+      <!-- 🔐 Login mit Skill -->
+      <div class="d-grid gap-2">
+        <button id="btnSkillLogin" class="btn btn-outline-secondary">
+          Mit Skill anmelden
+        </button>
+        <div id="skillInfo" class="form-text text-center">
+          Du wirst zu Skill weitergeleitet und danach automatisch hierher zurückgebracht.
+        </div>
+      </div>
     </div>
   </main>
 
   <script src="../js/bootstrap.bundle.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script type="module" src="../js/common.js"></script>
   <script type="module" src="../js/logon.js"></script>
 
 <script type="module">
@@ -86,11 +109,7 @@
   if (isLoggedIn()) window.location.replace("/homepage.html");
   setupNavbarForAuth();
 </script>
-  <script type="module" src="../js/voice.js"></script>
-  <script type="module">
-    import { wireAlexaLoginUI } from "../js/voice.js";
-    wireAlexaLoginUI();
-  </script>
+
 
 </body>
 </html>
