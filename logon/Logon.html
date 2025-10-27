@@ -50,6 +50,27 @@
         </form>
       </div>
 
+      
+      <!-- Alexa Login -->
+      <div class="card mt-3 p-3">
+        <h2 class="h6">Login mit Alexa</h2>
+        <p class="text-muted">Du kannst dich auch per Sprache über deinen Alexa‑Skill anmelden (benötigt eine zuvor vergebene 4‑stellige PIN in den Einstellungen).</p>
+        <button id="btnAlexaLogin" class="btn btn-outline-primary">Mit Alexa einloggen</button>
+
+        <div id="alexaLoginBox" class="alert alert-info mt-3 d-none">
+          <div class="d-flex align-items-center gap-3">
+            <div>
+              <div class="small text-uppercase text-muted">Code</div>
+              <div class="display-6" id="alexaCode">—</div>
+            </div>
+            <div>
+              <div id="alexaMsg">Starte die Authentifizierung auf deinem Echo.</div>
+              <div class="small text-muted">Sag: „Alexa, öffne Passwortmanager und authentifiziere mich mit Code <span id="alexaCodeInline"></span> und meiner PIN“.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="formError" class="text-danger small mt-2"></div>
     </div>
   </main>
@@ -65,7 +86,11 @@
   if (isLoggedIn()) window.location.replace("/homepage.html");
   setupNavbarForAuth();
 </script>
-
+  <script type="module" src="../js/voice.js"></script>
+  <script type="module">
+    import { wireAlexaLoginUI } from "../js/voice.js";
+    wireAlexaLoginUI();
+  </script>
 
 </body>
 </html>
