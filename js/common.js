@@ -4,7 +4,7 @@
 
 /** Production endpoints (Render) – fest verdrahtet */
 export const GQL_URL = "https://password-graphql.onrender.com/graphql";
-export const BACKEND_URL = "https://password-backend-fc0k.onrender.com";
+export const BACKEND_URL = "https://password-backend-721738115352.europe-west1.run.app";
 
 /** REST-Prefix deines Backends */
 export const API_PREFIX = "/api";
