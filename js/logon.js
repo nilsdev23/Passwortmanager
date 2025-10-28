@@ -44,7 +44,7 @@ $(function () {
     const body = Object.fromEntries(new FormData(this).entries());
     body.tmpToken = state.tmpToken;
 
-    ajaxJSON("/auth/login/totp-verify", body)
+    ajaxJSON("/auth/totp-verify", body)
       .done(res => {
         const token = res?.token || "";
         const email = res?.email || "";
