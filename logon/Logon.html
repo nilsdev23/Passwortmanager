@@ -1,14 +1,18 @@
 <!doctype html>
 <html lang="de">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logon – Passwortmanager</title>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="../js/bootstrap.bundle.min.js"></script>
-<script type="module" src="../js/logon.js"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="../js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../js/logon.js"></script>
 </head>
+
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
     <div class="container">
@@ -55,7 +59,8 @@
         </div>
         <div>
           <label class="form-label">TOTP-Code</label>
-          <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\\d{6}" maxlength="6" required />
+          <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\\d{6}" maxlength="6"
+            required />
         </div>
         <div class="d-grid">
           <button class="btn btn-primary" type="submit">Bestätigen</button>
@@ -68,11 +73,12 @@
         <div class="d-inline-block px-3 text-muted small">oder</div>
       </div>
 
-      
+
       <!-- Alexa Login -->
       <div class="card mt-3 p-3">
         <h2 class="h6">Login mit Alexa</h2>
-        <p class="text-muted">Du kannst dich auch per Sprache über deinen Alexa‑Skill anmelden (benötigt eine zuvor vergebene 4‑stellige PIN in den Einstellungen).</p>
+        <p class="text-muted">Du kannst dich auch per Sprache über deinen Alexa‑Skill anmelden (benötigt eine zuvor
+          vergebene 4‑stellige PIN in den Einstellungen).</p>
         <button id="btnAlexaLogin" class="btn btn-outline-primary">Mit Alexa einloggen</button>
 
         <div id="alexaLoginBox" class="alert alert-info mt-3 d-none">
@@ -83,7 +89,8 @@
             </div>
             <div>
               <div id="alexaMsg">Starte die Authentifizierung auf deinem Echo.</div>
-              <div class="small text-muted">Sag: „Alexa, öffne Passwortmanager und authentifiziere mich mit Code <span id="alexaCodeInline"></span> und meiner PIN“.</div>
+              <div class="small text-muted">Sag: „Alexa, öffne Passwortmanager und authentifiziere mich mit Code <span
+                  id="alexaCodeInline"></span> und meiner PIN“.</div>
             </div>
           </div>
         </div>
@@ -104,13 +111,14 @@
   <script src="../js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../js/logon.js"></script>
 
-<script type="module">
-  import { setupNavbarForAuth, isLoggedIn } from "../js/common.js";
-  // Bereits eingeloggt? Dann direkt weiter auf die Homepage leiten (optional, aber sinnvoll):
-  if (isLoggedIn()) window.location.replace("/homepage.html");
-  setupNavbarForAuth();
-</script>
+  <script type="module">
+    import { setupNavbarForAuth, isLoggedIn } from "../js/common.js";
+    // Bereits eingeloggt? Dann direkt weiter auf die Homepage leiten (optional, aber sinnvoll):
+    if (isLoggedIn()) window.location.replace("/homepage.html");
+    setupNavbarForAuth();
+  </script>
 
 
 </body>
+
 </html>
