@@ -93,10 +93,9 @@ $(async function () {
     const card = $(`
       <article class="vault-card" data-id="${item.id}">
         <div class="vault-card__head">
-          <div class="vault-card__avatar"></div>
+          <div class="vault-card__title"></div>
           <button class="vault-card__peek" type="button" aria-label="Passwort anzeigen"></button>
         </div>
-        <div class="vault-card__title"></div>
         <div class="vault-card__field">
           <div class="vault-card__label">BENUTZERNAME</div>
           <div class="vault-card__value vault-card__username"></div>
@@ -119,7 +118,6 @@ $(async function () {
       </article>
     `);
 
-    card.find(".vault-card__avatar").text(getInitial(title));
     card.find(".vault-card__title").text(title);
     card.find(".vault-card__username").text(username);
 
@@ -222,11 +220,6 @@ $(async function () {
     $form.find('input[name="id"]').val("");
     $modalTitle.text(defaultModalTitle);
     $saveBtn.text(defaultSaveLabel);
-  }
-
-  function getInitial(text) {
-    const t = String(text || "").trim();
-    return t ? t[0].toLowerCase() : "?";
   }
 
   function ensureAbsoluteUrl(url) {
