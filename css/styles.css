@@ -194,22 +194,8 @@ a:hover, a:focus{ color: #0284c7; text-decoration: underline; }  /* Sky-600 */
 
 .vault-card__head{
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-}
-
-.vault-card__avatar{
-  width: 46px;
-  height: 46px;
-  border-radius: 16px;
-  background: rgba(100, 116, 255, 0.12);
-  color: #0f172a;
-  font-weight: 600;
-  font-size: 1.35rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: lowercase;
 }
 
 .vault-card__peek{
@@ -244,6 +230,7 @@ a:hover, a:focus{ color: #0284c7; text-decoration: underline; }  /* Sky-600 */
   font-weight: 600;
   color: #0f172a;
   margin: 0;
+  flex: 1;
 }
 
 .vault-card__field{
