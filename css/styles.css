@@ -4,13 +4,13 @@
 
 /* ---- Theme Tokens ---- */
 :root{
-  --brand: #5deafe;          /* Primärfarbe (Würth-Rot-ähnlich) #cc0000 */
-  --brand-hover: #40b9c9;    /* Hover-Farbe für Primary-Buttons #a40000*/
-  --bg: #f6f7fb;             /* Seitenhintergrund */
-  --text: #0f172a;           /* Standardtext (Slate-900) */
-  --muted: #6b7280;          /* Gedämpfter Text (Slate-500/600) */
-  --border: #e5e7eb;         /* Rahmenfarbe (Slate-200) */
-  --border-strong: #cbd5e1;  /* kräftigerer Rahmen (Slate-300) */
+  --brand: #292540;          /* Primärfarbe (Würth-Rot-ähnlich) #cc0000 */
+  --brand-hover: #9067c6;    /* Hover-Farbe für Primary-Buttons #a40000*/
+  --bg: #f7ece1;             /* Seitenhintergrund #f6f7fb */
+  --text: #0f172a;           /* Standardtext (Slate-900) #0f172a */
+  --muted: #6b7280;          /* Gedämpfter Text (Slate-500/600) #6b7280*/
+  --border: #e5e7eb;         /* Rahmenfarbe (Slate-200)#e5e7eb */
+  --border-strong: #cbd5e1;  /* kräftigerer Rahmen (Slate-300)#cbd5e1 */
   --card-shadow: 0 10px 24px rgba(0,0,0,.05);
   --radius-lg: 16px;
 }
