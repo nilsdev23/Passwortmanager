@@ -4,7 +4,7 @@
 
 /** Production endpoints (Render) – fest verdrahtet */
 export const GQL_URL = "https://password-graphql.onrender.com/graphql";
-export const BACKEND_URL = "https://password-backend-fc0k.onrender.com";
+export const BACKEND_URL = "https://password-backend-721738115352.europe-west1.run.app";
 
 /** REST-Prefix deines Backends */
 export const API_PREFIX = "/api";
@@ -232,6 +232,44 @@ export function ajaxJSON(path, methodOrBody, body) {
   return asJQStyle(p);
 }
 
+
+/** Spezialfall: wie ajaxJSON, aber mit explizitem Bearer-Token (z. B. tmpToken) */
+export async function ajaxJSONWithAuth(path, body = {}, token, method = "POST") {
+  const url = normalizeApiPath(path);
+  const headers = { "Authorization": "Bearer " + String(token || "").trim() };
+  if (body !== undefined && body !== null) headers["Content-Type"] = "application/json";
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      mode: "cors",
+      credentials: "omit",
+      headers,
+      body: body !== undefined && body !== null ? JSON.stringify(body) : undefined,
+      redirect: "follow",
+    });
+  } catch (netErr) {
+    const err = new Error(`Netzwerkfehler beim Aufruf von ${url}: ${netErr?.message || netErr}`);
+    err.cause = netErr;
+    err.url = url;
+    throw err;
+  }
+
+  let json = null;
+  const ct = res.headers.get("Content-Type") || "";
+  if (ct.includes("application/json")) {
+    try { json = await res.json(); } catch (e) { json = null; }
+  }
+  if (!res.ok) {
+    const msg = json?.error || json?.message || `HTTP ${res.status}`;
+    const err = new Error(`${msg} – URL: ${url}`);
+    err.status = res.status;
+    err.body = json;
+    err.url = url;
+    throw err;
+  }
+  return json;
+}
 /* ===========================
    GraphQL-Helper
 =========================== */
