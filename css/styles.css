@@ -4,8 +4,8 @@
 
 /* ---- Theme Tokens ---- */
 :root{
-  --brand: #cc0000;          /* Primärfarbe (Würth-Rot-ähnlich) */
-  --brand-hover: #a40000;    /* Hover-Farbe für Primary-Buttons */
+  --brand: #5deafe;          /* Primärfarbe (Würth-Rot-ähnlich) #cc0000 */
+  --brand-hover: #40b9c9;    /* Hover-Farbe für Primary-Buttons #a40000*/
   --bg: #f6f7fb;             /* Seitenhintergrund */
   --text: #0f172a;           /* Standardtext (Slate-900) */
   --muted: #6b7280;          /* Gedämpfter Text (Slate-500/600) */
