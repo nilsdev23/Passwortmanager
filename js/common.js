@@ -369,25 +369,33 @@ export function guardBrandLink() {
   });
 }
 
+// nutzt deine zentralen Routen-Constants (HOME_PATH, SETTINGS_PATH, LOGIN_PATH, REGISTER_PATH)
 export function setupNavbarForAuth() {
   const nav = document.querySelector(".navbar .navbar-nav");
   if (!nav) return;
 
+  const here = window.location.pathname;
+  const onHome = here === HOME_PATH || here.endsWith("/homepage.html");
+
   if (isLoggedIn()) {
+    // 'Tresor' NUR anzeigen, wenn man NICHT gerade im Tresor ist
     nav.innerHTML = `
-      <li class="nav-item"><a class="nav-link" href="/homepage.html">Tresor</a></li>
-      <li class="nav-item"><a class="nav-link" href="/settings/Settings.html">Settings</a></li>
+      ${onHome ? "" : `<li class="nav-item"><a class="nav-link" href="${HOME_PATH}">Tresor</a></li>`}
+      <li class="nav-item"><a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a></li>
       <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Logout</a></li>
     `;
+
     document.getElementById("logoutLink")?.addEventListener("click", (e) => {
       e.preventDefault();
       clearAuth();
-      window.location.href = "/logon/Logon.html";
+      window.location.href = LOGIN_PATH;
     });
   } else {
+    // Unangemeldet: nur Login/Registrieren
     nav.innerHTML = `
-      <li class="nav-item"><a class="nav-link" href="/logon/Logon.html">Login</a></li>
-      <li class="nav-item"><a class="nav-link" href="/register/Register.html">Register</a></li>
+      <li class="nav-item"><a class="nav-link" href="${LOGIN_PATH}">Login</a></li>
+      <li class="nav-item"><a class="nav-link" href="${REGISTER_PATH}">Register</a></li>
     `;
   }
 }
+
