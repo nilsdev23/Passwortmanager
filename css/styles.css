@@ -6,7 +6,7 @@
 :root{
   --brand: #292540;          /* Primärfarbe (Würth-Rot-ähnlich) #cc0000 */
   --brand-hover: #9067c6;    /* Hover-Farbe für Primary-Buttons #a40000*/
-  --bg: #f7ece1;             /* Seitenhintergrund #f6f7fb */
+  --bg: #f4f3ee;             /* Seitenhintergrund #f6f7fb */
   --text: #0f172a;           /* Standardtext (Slate-900) #0f172a */
   --muted: #6b7280;          /* Gedämpfter Text (Slate-500/600) #6b7280*/
   --border: #e5e7eb;         /* Rahmenfarbe (Slate-200)#e5e7eb */
