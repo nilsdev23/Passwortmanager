@@ -1,13 +1,15 @@
 <!doctype html>
 <html lang="de">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logon – Passwortmanager</title>
-
+  <script src="../js/jquery-3.7.1.min.js"></script>
   <link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/styles.css">
 </head>
+
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
     <div class="container">
@@ -56,12 +58,14 @@
         <!-- Tabs für MFA -->
         <ul class="nav nav-pills mb-3" id="mfaTabs" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-totp" data-bs-toggle="pill" data-bs-target="#pane-totp" type="button" role="tab">
+            <button class="nav-link active" id="tab-totp" data-bs-toggle="pill" data-bs-target="#pane-totp"
+              type="button" role="tab">
               TOTP (Authenticator)
             </button>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-voice" data-bs-toggle="pill" data-bs-target="#pane-voice" type="button" role="tab">
+            <button class="nav-link" id="tab-voice" data-bs-toggle="pill" data-bs-target="#pane-voice" type="button"
+              role="tab">
               Alexa: Voice-PIN + Code
             </button>
           </li>
@@ -74,7 +78,8 @@
               <div>
                 <label class="form-label">TOTP-Code</label>
                 <!-- Wichtig: im HTML ein einzelner Backslash -->
-                <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6" required />
+                <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6"
+                  required />
               </div>
               <div class="d-grid">
                 <button class="btn btn-primary" type="submit">Bestätigen</button>
@@ -110,7 +115,8 @@
 
               <ol class="small mb-2">
                 <li>Sage zu Alexa: <em>„Alexa, öffne Passwortmanager.“</em></li>
-                <li>Wenn sie dich auffordert: Nenne zuerst den 4-stelligen Code <strong id="voiceCodeInline">----</strong> und dann deine Sprach-PIN.</li>
+                <li>Wenn sie dich auffordert: Nenne zuerst den 4-stelligen Code <strong
+                    id="voiceCodeInline">----</strong> und dann deine Sprach-PIN.</li>
               </ol>
 
               <div class="d-grid gap-2">
@@ -119,7 +125,8 @@
               </div>
 
               <div id="voiceError" class="text-danger small mt-2"></div>
-              <div id="voiceInfo" class="text-muted small mt-2">Wir prüfen automatisch alle paar Sekunden, ob Alexa dich bestätigt hat…</div>
+              <div id="voiceInfo" class="text-muted small mt-2">Wir prüfen automatisch alle paar Sekunden, ob Alexa dich
+                bestätigt hat…</div>
             </div>
           </div>
         </div>
@@ -131,4 +138,5 @@
   <script src="../js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../js/logon.js"></script>
 </body>
+
 </html>
