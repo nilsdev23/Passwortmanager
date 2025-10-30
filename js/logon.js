@@ -102,7 +102,7 @@ $(function () {
     $("#formError").text("");
 
     try {
-      const { tmpToken } = await ajaxJSON("/auth", { email, password });
+      const { tmpToken } = await ajaxJSON("/auth/login", { email, password });
 
       // tmpToken merken und TEMPORÄR als "aktuellen" Token setzen,
       // damit /api/me, /voice/challenge und /voice/finalize authentifiziert sind
