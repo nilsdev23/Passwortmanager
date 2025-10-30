@@ -86,11 +86,11 @@ function cancelVoiceFlow() {
 
 $(function () {
   const $formLogin = $("#formLogin");
-  const $formTotp  = $("#formTotp");
+  const $formTotp = $("#formTotp");
 
   const $mfaContainer = document.getElementById("mfaContainer");
   const $voiceUnavailable = document.getElementById("voiceUnavailable");
-  const $voiceSection     = document.getElementById("voiceSection");
+  const $voiceSection = document.getElementById("voiceSection");
 
   // Schritt 1: E-Mail/Passwort
   $formLogin.on("submit", async function (e) {
