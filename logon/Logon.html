@@ -1,13 +1,14 @@
 <!doctype html>
 <html lang="de">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Logon – Passwortmanager</title>
-
   <link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/styles.css">
 </head>
+
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
     <div class="container">
@@ -31,7 +32,7 @@
     <div class="card p-4 mx-auto" style="max-width:520px">
       <h1 class="h4 mb-3">Anmelden</h1>
 
-      <!-- Standard Login (E-Mail + Passwort) -->
+      <!-- Schritt 1: E-Mail + Passwort -->
       <form id="formLogin" class="vstack gap-2">
         <div>
           <label class="form-label">E-Mail</label>
@@ -47,39 +48,95 @@
         <div id="formError" class="text-danger small mt-2"></div>
       </form>
 
-      <!-- 2FA Schritt -->
-      <form id="formTotp" class="vstack gap-2 mt-3" style="display:none">
-        <div class="alert alert-info py-2">
-          Bitte gib deinen 6-stelligen TOTP-Code ein.
+      <!-- Schritt 2: Auswahl der zweiten Faktor-Methode (wird nach Login eingeblendet) -->
+      <div id="mfaContainer" class="mt-3" style="display:none">
+        <div class="alert alert-info py-2 mb-3">
+          Wähle deine zweite Stufe der Anmeldung.
         </div>
-        <div>
-          <label class="form-label">TOTP-Code</label>
-          <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\\d{6}" maxlength="6" required />
-        </div>
-        <div class="d-grid">
-          <button class="btn btn-primary" type="submit">Bestätigen</button>
-        </div>
-        <div id="totpError" class="text-danger small mt-2"></div>
-      </form>
 
-      <!-- Divider -->
-      <div class="text-center my-3">
-        <div class="d-inline-block px-3 text-muted small">oder</div>
-      </div>
+        <!-- Tabs für MFA -->
+        <ul class="nav nav-pills mb-3" id="mfaTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-totp" data-bs-toggle="pill" data-bs-target="#pane-totp"
+              type="button" role="tab">
+              TOTP (Authenticator)
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-voice" data-bs-toggle="pill" data-bs-target="#pane-voice" type="button"
+              role="tab">
+              Alexa: Voice-PIN + Code
+            </button>
+          </li>
+        </ul>
 
-      <!-- 🔐 Login mit Skill -->
-      <div class="d-grid gap-2">
-        <button id="btnSkillLogin" class="btn btn-outline-secondary">
-          Mit Skill anmelden
-        </button>
-        <div id="skillInfo" class="form-text text-center">
-          Du wirst zu Skill weitergeleitet und danach automatisch hierher zurückgebracht.
+        <div class="tab-content">
+          <!-- TOTP-Variante -->
+          <div class="tab-pane fade show active" id="pane-totp" role="tabpanel" aria-labelledby="tab-totp">
+            <form id="formTotp" class="vstack gap-2">
+              <div>
+                <label class="form-label">TOTP-Code</label>
+                <!-- Wichtig: im HTML ein einzelner Backslash -->
+                <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6"
+                  required />
+              </div>
+              <div class="d-grid">
+                <button class="btn btn-primary" type="submit">Bestätigen</button>
+              </div>
+              <div id="totpError" class="text-danger small mt-2"></div>
+            </form>
+          </div>
+
+          <!-- Alexa Voice-PIN + wechselnder Anmeldecode -->
+          <div class="tab-pane fade" id="pane-voice" role="tabpanel" aria-labelledby="tab-voice">
+            <!-- Falls Alexa nicht verknüpft / keine Sprach-PIN -->
+            <div id="voiceUnavailable" class="alert alert-warning d-none">
+              Dieser Account ist nicht mit Alexa verknüpft oder es ist keine Sprach-PIN gesetzt.
+              <a href="/settings/Settings.html">In den Settings</a> kannst du das einrichten.
+            </div>
+
+            <!-- Voice-Flow -->
+            <div id="voiceSection" class="d-none">
+              <div class="card mb-2">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <div class="text-muted small">Dein Anmeldecode (4-stellig)</div>
+                      <div id="voiceCode" class="display-5 fw-bold">----</div>
+                      <div class="text-muted small">Gültig noch <span id="voiceTtl">—</span> Sekunden</div>
+                    </div>
+                    <div class="ms-3">
+                      <button id="btnRefreshVoiceCode" class="btn btn-outline-secondary">Neuen Code erzeugen</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <ol class="small mb-2">
+                <li>Sage zu Alexa: <em>„Alexa, öffne Passwortmanager.“</em></li>
+                <li>Wenn sie dich auffordert: Nenne zuerst den 4-stelligen Code <strong
+                    id="voiceCodeInline">----</strong> und dann deine Sprach-PIN.</li>
+              </ol>
+
+              <div class="d-grid gap-2">
+                <button id="btnIHaveSpoken" class="btn btn-primary">Ich habe mit Alexa gesprochen</button>
+                <button id="btnCancelVoice" class="btn btn-outline-secondary">Abbrechen</button>
+              </div>
+
+              <div id="voiceError" class="text-danger small mt-2"></div>
+              <div id="voiceInfo" class="text-muted small mt-2">Wir prüfen automatisch alle paar Sekunden, ob Alexa dich
+                bestätigt hat…</div>
+            </div>
+          </div>
         </div>
       </div>
+      <!-- Ende Schritt 2 -->
     </div>
   </main>
 
-  <script src="../js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="../js/logon.js"></script>
+  <script src="./js/jquery-3.7.1.min.js"></script>
+  <script src="./js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="./js/logon.js"></script>
 </body>
+
 </html>
