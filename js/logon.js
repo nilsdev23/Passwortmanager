@@ -148,7 +148,7 @@ $(function () {
     $("#totpError").text("");
 
     try {
-      const { token } = await ajaxJSON("/totp-verify", { tmpToken: state.tmpToken, code });
+      const { token } = await ajaxJSON("/auth/totp-verify", { tmpToken: state.tmpToken, code });
       setAuth(token, state.email);
       redirectAfterLogin();
     } catch (x) {
