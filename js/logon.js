@@ -23,7 +23,7 @@ function setText(id, txt) {
 async function startVoiceChallenge() {
   try {
     // Mit tmpToken im Storage authentifizieren (haben wir bereits gesetzt)
-    const resp = await ajaxJSON("/voice/challenge");
+    const resp = await ajaxJSON("/voice/challenge", {});
     const { code, ttlSeconds } = resp;
 
     state.voice.code = code;
@@ -61,7 +61,7 @@ function startVoiceFinalizePolling() {
   if (state.voice.pollTimer) clearInterval(state.voice.pollTimer);
   state.voice.pollTimer = setInterval(async () => {
     try {
-      const res = await ajaxJSON("/voice/finalize"); // erwartet Bearer tmpToken
+      const res = await ajaxJSON("/voice/finalize", {}); // erwartet Bearer tmpToken
       if (res && res.token) {
         // Erfolgreich – finalen Token speichern und weiter
         stopVoiceTimers();
@@ -86,11 +86,11 @@ function cancelVoiceFlow() {
 
 $(function () {
   const $formLogin = $("#formLogin");
-  const $formTotp = $("#formTotp");
+  const $formTotp  = $("#formTotp");
 
   const $mfaContainer = document.getElementById("mfaContainer");
   const $voiceUnavailable = document.getElementById("voiceUnavailable");
-  const $voiceSection = document.getElementById("voiceSection");
+  const $voiceSection     = document.getElementById("voiceSection");
 
   // Schritt 1: E-Mail/Passwort
   $formLogin.on("submit", async function (e) {
@@ -167,7 +167,7 @@ $(function () {
     e.preventDefault();
     // Triggert eine sofortige Finalisierungs-Prüfung
     try {
-      const res = await ajaxJSON("/voice/finalize");
+      const res = await ajaxJSON("/voice/finalize", {});
       if (res && res.token) {
         stopVoiceTimers();
         setAuth(res.token, state.email);
