@@ -4,13 +4,13 @@
 
 /* ---- Theme Tokens ---- */
 :root{
-  --brand: #cc0000;          /* Primärfarbe (Würth-Rot-ähnlich) */
-  --brand-hover: #a40000;    /* Hover-Farbe für Primary-Buttons */
-  --bg: #f6f7fb;             /* Seitenhintergrund */
-  --text: #0f172a;           /* Standardtext (Slate-900) */
-  --muted: #6b7280;          /* Gedämpfter Text (Slate-500/600) */
-  --border: #e5e7eb;         /* Rahmenfarbe (Slate-200) */
-  --border-strong: #cbd5e1;  /* kräftigerer Rahmen (Slate-300) */
+  --brand: #292540;          /* Primärfarbe (Würth-Rot-ähnlich) #cc0000 */
+  --brand-hover: #9067c6;    /* Hover-Farbe für Primary-Buttons #a40000*/
+  --bg: #f6f7fb;             /* Seitenhintergrund #f6f7fb */
+  --text: #0f172a;           /* Standardtext (Slate-900) #0f172a */
+  --muted: #6b7280;          /* Gedämpfter Text (Slate-500/600) #6b7280*/
+  --border: #e5e7eb;         /* Rahmenfarbe (Slate-200)#e5e7eb */
+  --border-strong: #cbd5e1;  /* kräftigerer Rahmen (Slate-300)#cbd5e1 */
   --card-shadow: 0 10px 24px rgba(0,0,0,.05);
   --radius-lg: 16px;
 }
@@ -172,3 +172,151 @@ a:hover, a:focus{ color: #0284c7; text-decoration: underline; }  /* Sky-600 */
 
 /* Platz für zukünftige Brand-Varianten:
    .btn-brand, .bg-brand, etc., falls ihr später erweitern wollt. */
+
+/* ---- Vault Cards ---- */
+.vault-grid{
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.vault-card{
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 18px 45px -20px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  min-height: 260px;
+}
+
+.vault-card__head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.vault-card__peek{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  border: none;
+  background: rgba(100, 116, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+
+.vault-card__peek:hover,
+.vault-card__peek:focus{
+  background: rgba(100, 116, 255, 0.18);
+}
+
+.vault-card__peek::before{
+  content: "👁";
+  font-size: 1.1rem;
+}
+
+.vault-card--show .vault-card__peek::before{
+  content: "🙈";
+}
+
+.vault-card__title{
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  flex: 1;
+}
+
+.vault-card__field{
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.vault-card__label{
+  font-size: .75rem;
+  letter-spacing: .08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.vault-card__value{
+  font-size: 1rem;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.vault-card__password{
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+
+.vault-card__password-input{
+  flex: 1;
+  border: 1px solid var(--border-strong);
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: .55rem .9rem;
+  font-family: "SF Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: .18em;
+}
+
+.vault-card__password-input[type="text"]{
+  letter-spacing: normal;
+}
+
+.vault-card__copy{
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-weight: 600;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+.vault-card__copy:hover,
+.vault-card__copy:focus{
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.vault-card__copy--success{
+  color: #16a34a;
+}
+
+.vault-card__field--url .vault-card__value{
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.vault-card__field--url .vault-card__value:hover,
+.vault-card__field--url .vault-card__value:focus{
+  text-decoration: underline;
+}
+
+.vault-card__actions{
+  margin-top: auto;
+  display: flex;
+  gap: .75rem;
+}
+
+.vault-card__actions .btn{
+  min-width: 120px;
+}
+
+@media (max-width: 575.98px){
+  .vault-grid{
+    grid-template-columns: 1fr;
+  }
+  .vault-card{
+    padding: 1.25rem;
+  }
+}
