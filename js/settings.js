@@ -72,7 +72,100 @@ async function loadStatusAndWireUi() {
     alert(humanError(x));
   }
 }
+function show(el, yes) {
+  el.classList.toggle("d-none", !yes);
+}
 
+$(async function () {
+  if (!requireAuthOrRedirect()) return;
+
+  const $notLinked = document.getElementById("notLinked");
+  const $linked    = document.getElementById("linked");
+
+  const $pinNotLinked = document.getElementById("pinNotLinked");
+  const $pinUnset     = document.getElementById("pinUnset");
+  const $pinSet       = document.getElementById("pinSet");
+  const $formSet      = document.getElementById("formSetPin");
+  const $formChange   = document.getElementById("formChangePin");
+  const $btnChange    = document.getElementById("btnChangePin");
+  const $btnClear     = document.getElementById("btnClearPin");
+
+  async function refresh() {
+    try {
+      const me = await ajaxJSON("/auth/me"); // liefert alexaLinked & voicePinSet
+      const linked = !!me.alexaLinked;
+      const pinSet = !!me.voicePinSet;
+
+      show($notLinked, !linked);
+      show($linked, linked);
+
+      // PIN-Sektion
+      show($pinNotLinked, !linked);
+      show($pinUnset, linked && !pinSet);
+      show($pinSet, linked && pinSet);
+
+      if (!linked) return;
+    } catch (x) {
+      alert(humanError(x));
+    }
+  }
+
+  // PIN festlegen
+  $formSet?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData($formSet);
+    const pin  = String(fd.get("pin") || "").trim();
+    const pin2 = String(fd.get("pin2") || "").trim();
+    if (pin !== pin2) return alert("PINs stimmen nicht überein.");
+    if (!/^\d{4,8}$/.test(pin)) return alert("PIN muss aus 4–8 Ziffern bestehen.");
+    try {
+      await ajaxJSON("/voice/pin", { pin });
+      alert("Sprach-PIN gespeichert.");
+      $formSet.reset();
+      await refresh();
+    } catch (x) {
+      alert(humanError(x));
+    }
+  });
+
+  // PIN ändern (Form ein-/ausblenden)
+  $btnChange?.addEventListener("click", () => {
+    $formChange.classList.toggle("d-none");
+  });
+
+  // PIN ändern (submit)
+  $formChange?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData($formChange);
+    const pin  = String(fd.get("pin") || "").trim();
+    const pin2 = String(fd.get("pin2") || "").trim();
+    if (pin !== pin2) return alert("PINs stimmen nicht überein.");
+    if (!/^\d{4,8}$/.test(pin)) return alert("PIN muss aus 4–8 Ziffern bestehen.");
+    try {
+      await ajaxJSON("/voice/pin", { pin });
+      alert("Sprach-PIN geändert.");
+      $formChange.reset();
+      $formChange.classList.add("d-none");
+      await refresh();
+    } catch (x) {
+      alert(humanError(x));
+    }
+  });
+
+  // PIN löschen
+  $btnClear?.addEventListener("click", async () => {
+    if (!confirm("Sprach-PIN wirklich löschen?")) return;
+    try {
+      await ajaxJSON("/voice/pin", "DELETE");
+      alert("Sprach-PIN gelöscht.");
+      await refresh();
+    } catch (x) {
+      alert(humanError(x));
+    }
+  });
+
+  await refresh();
+});
 $(async function () {
   if (!requireAuthOrRedirect()) return;
   await loadStatusAndWireUi();
