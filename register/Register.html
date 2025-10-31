@@ -56,20 +56,12 @@
     </div>
 
     <!-- Register.html – TOTP-Box -->
-    <div id="totpBox" class="alert alert-success mt-4 d-none">
+    <div id="totpBox" class="alert alert-success mt-4 d-none text-center mx-auto" style="max-width: 360px;">
       <h2 class="h6 mb-3">Konto angelegt — Zwei-Faktor-Authentifizierung einrichten</h2>
-      <div class="d-flex gap-3 align-items-start flex-wrap">
-        <img id="totpQr" alt="TOTP QR Code" class="border rounded" style="width:200px;height:200px;display:none;" />
-        <div class="flex-grow-1">
-          <p class="mb-2">Scanne den QR-Code mit deiner Authenticator-App (z. B. Google Authenticator, 1Password,
-            Authy).</p>
-          <div class="small text-muted mb-1">Falls das Scannen nicht klappt:</div>
-          <a id="totpLink" target="_blank" rel="noopener" class="small d-block text-break"></a>
-          <div id="totpSecretWrap" class="small d-none mt-2">Secret: <code id="totpSecret"></code></div>
-          <div class="mt-3">
-            <button id="btnGoLogin" class="btn btn-outline-primary btn-sm">Weiter zum Login</button>
-          </div>
-        </div>
+      <p class="mb-3">Scanne den QR-Code mit deiner bevorzugten Authenticator-App.</p>
+      <img id="totpQr" alt="TOTP QR Code" class="border rounded mx-auto" style="width:220px;height:220px;display:none;" />
+      <div class="mt-4">
+        <button id="btnGoLogin" class="btn btn-outline-primary btn-sm">Weiter zum Login</button>
       </div>
     </div>
 
