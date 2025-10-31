@@ -81,9 +81,10 @@
   <script type="module" src="../js/register.js"></script>
 
 <script type="module">
-  import { setupNavbarForAuth, isLoggedIn } from "../js/common.js";
+  import { setupNavbarForAuth, isLoggedIn, guardBrandLink } from "../js/common.js";
   if (isLoggedIn()) window.location.replace("/homepage.html");
   setupNavbarForAuth();
+  guardBrandLink();
 </script>
 
 
