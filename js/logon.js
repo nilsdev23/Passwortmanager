@@ -108,7 +108,7 @@ $(function () {
       // damit /api/me, /voice/challenge und /voice/finalize authentifiziert sind
       state.tmpToken = tmpToken;
       state.email = email;
-      setAuth(tmpToken, email);
+      setAuth(tmpToken, email, { temporary: true });
 
       // Login-Form ausblenden, MFA zeigen
       show(document.getElementById("formLogin"), false);
