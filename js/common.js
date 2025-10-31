@@ -70,27 +70,38 @@ function normalizeApiPath(path) {
    - Speichert { token, email } als 'pm_auth'
 =========================== */
 const AUTH_KEY = "pm_auth";
+const AUTH_DEFAULT = { token: "", email: null, temporary: false };
 
 export function getAuth() {
   try {
     const raw = localStorage.getItem(AUTH_KEY);
     if (raw) {
       const obj = JSON.parse(raw);
-      if (obj && typeof obj.token === "string") return obj;
+      if (obj && typeof obj.token === "string") {
+        return {
+          token: obj.token,
+          email: obj.email ?? null,
+          temporary: !!obj.temporary,
+        };
+      }
     }
     // Legacy-Fallback (nur Token)
     const legacy = localStorage.getItem("token");
-    if (legacy) return { token: legacy, email: null };
+    if (legacy) return { token: legacy, email: null, temporary: false };
   } catch {}
-  return { token: "", email: null };
+  return { ...AUTH_DEFAULT };
 }
 
 export function getToken() {
   return getAuth().token || "";
 }
 
-export function setAuth(token, email) {
-  const data = { token: token || "", email: email || null };
+export function setAuth(token, email, options = {}) {
+  const data = {
+    token: token || "",
+    email: email ?? null,
+    temporary: !!options.temporary,
+  };
   try {
     localStorage.setItem(AUTH_KEY, JSON.stringify(data));
     // Optional: Legacy-Schlüssel für ältere Seiten
@@ -113,6 +124,11 @@ export function authHeader() {
 
 /** Auth erzwingen oder zur Login-Seite umleiten */
 const RETURN_KEY = "pm_return";
+
+export function hasFullAuth() {
+  const auth = getAuth();
+  return !!auth.token && !auth.temporary;
+}
 
 function setReturnPathIfNeeded() {
   try {
@@ -142,9 +158,9 @@ export function redirectAfterLogin(defaultPath = HOME_PATH) {
 }
 
 export function requireAuthOrRedirect() {
-  const t = getToken();
-  if (!t) {
-    setReturnPathIfNeeded();
+  const auth = getAuth();
+  if (!auth.token || auth.temporary) {
+    if (!auth.token) setReturnPathIfNeeded();
     goTo(LOGIN_PATH);
     return false;
   }
@@ -339,7 +355,7 @@ export function humanError(e) {
 }
 
 export function isLoggedIn() {
-  return !!getToken(); // nutzt pm_auth aus getAuth()
+  return hasFullAuth(); // nutzt pm_auth aus getAuth()
 }
 
 
@@ -398,4 +414,3 @@ export function setupNavbarForAuth() {
     `;
   }
 }
-
