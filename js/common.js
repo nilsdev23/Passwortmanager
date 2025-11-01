@@ -2,13 +2,12 @@
    common.js (Frontend Utils)
    =========================== */
 
-<<<<<<< HEAD
+
 /** Production endpoints (Render) – fest verdrahtet */
 export const GQL_URL = "https://password-graphql-721738115352.europe-west1.run.app/";
-=======
-/** Production endpoints  **/
-export const GQL_URL = "https://password-graphql.onrender.com/graphql";
->>>>>>> 4fe3e4327f5e4e585ff7b5c9fb648f8e7c95e1c8
+
+
+
 export const BACKEND_URL = "https://password-backend-721738115352.europe-west1.run.app";
 
 /** REST-Prefix  */
