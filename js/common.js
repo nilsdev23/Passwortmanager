@@ -2,11 +2,11 @@
    common.js (Frontend Utils)
    =========================== */
 
-/** Production endpoints (Render) – fest verdrahtet */
+/** Production endpoints  **/
 export const GQL_URL = "https://password-graphql.onrender.com/graphql";
 export const BACKEND_URL = "https://password-backend-721738115352.europe-west1.run.app";
 
-/** REST-Prefix deines Backends */
+/** REST-Prefix  */
 export const API_PREFIX = "/api";
 
 /** Route zu deiner Login-Seite (für Redirects) */
@@ -168,7 +168,7 @@ export function requireAuthOrRedirect() {
 }
 
 /* ===========================
-   jQuery-kompatibles Promise-Wrapperchen
+   jQuery-kompatibles Promise-Wrapper
    - ermöglicht .done/.fail/.always UND native .then/.catch/.finally
 =========================== */
 function asJQStyle(promise) {
@@ -187,7 +187,7 @@ function asJQStyle(promise) {
    REST-Helper (JSON) via fetch
 =========================== */
 export function ajaxJSON(path, methodOrBody, body) {
-  const url = normalizeApiPath(path); // fügt automatisch /api hinzu
+  const url = normalizeApiPath(path); 
 
   // Flexible Aufrufvarianten zulassen:
   // - ajaxJSON(path)
@@ -358,10 +358,6 @@ export function isLoggedIn() {
   return hasFullAuth(); // nutzt pm_auth aus getAuth()
 }
 
-
-
-
-/** Navbar für Unangemeldete: nur Login & Registrieren anzeigen */
 export function lockUnauthedNavbar() {
   if (isLoggedIn()) return;
   const nav = document.querySelector('.navbar .navbar-nav');
@@ -373,7 +369,6 @@ export function lockUnauthedNavbar() {
   }
 }
 
-/** Klick auf Brand-Logo: Unangemeldete werden zum Login geschickt */
 export function guardBrandLink() {
   const brand = document.querySelector('.navbar-brand');
   if (!brand) return;
@@ -385,24 +380,29 @@ export function guardBrandLink() {
   });
 }
 
-// nutzt deine zentralen Routen-Constants (HOME_PATH, SETTINGS_PATH, LOGIN_PATH, REGISTER_PATH)
-// common.js
+
 export function setupNavbarForAuth() {
   const nav = document.querySelector(".navbar .navbar-nav");
   if (!nav) return;
+
+  nav.classList.add("flex-nowrap", "align-items-center", "gap-2");
 
   const here = window.location.pathname;
   const onHome = here === HOME_PATH || here.endsWith("/homepage.html");
 
   if (isLoggedIn()) {
-    // E-Mail noch NICHT direkt in innerHTML einfügen (XSS-Sicherheit); wir füllen sie danach via textContent.
+   
     nav.innerHTML = `
       ${onHome ? "" : `<li class="nav-item"><a class="nav-link" href="${HOME_PATH}">Tresor</a></li>`}
-      <li class="nav-item"><a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a></li>
-      <li class="nav-item ms-lg-3 ms-md-2">
-        <span class="navbar-text small text-muted" id="navUserEmail"></span>
+      <li class="nav-item">
+        <a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a>
       </li>
-      <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Logout</a></li>
+      <li class="nav-item">
+        <a id="navUserEmail" class="nav-link pe-none text-truncate d-inline-block" href="#" tabindex="-1" style="max-width: 28ch;"></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="logoutLink" href="#">Logout</a>
+      </li>
     `;
 
     // Logout
@@ -412,21 +412,21 @@ export function setupNavbarForAuth() {
       window.location.href = LOGIN_PATH;
     });
 
-    // E-Mail aus LocalStorage setzen …
-    const emailSpan = document.getElementById("navUserEmail");
+    // E-Mail setzen (zuerst aus Storage) …
+    const emailEl = document.getElementById("navUserEmail");
     const auth = getAuth();
-    if (emailSpan && auth?.email) {
-      emailSpan.textContent = auth.email;
+    if (emailEl && auth?.email) {
+      emailEl.textContent = auth.email;
     }
 
-    // … oder (Fallback) vom Backend holen und speichern, falls im Storage noch keine E-Mail liegt
-    if (emailSpan && !auth?.email) {
+    
+    if (emailEl && !auth?.email) {
       fetchMe().then(me => {
         if (me?.email) {
-          setAuth(getToken(), me.email);           // Token beibehalten, Email nachziehen
-          emailSpan.textContent = me.email;
+          setAuth(getToken(), me.email);
+          emailEl.textContent = me.email;
         }
-      }).catch(() => { /* ignorieren */ });
+      }).catch(() => {});
     }
   } else {
     // Unangemeldet
@@ -436,5 +436,6 @@ export function setupNavbarForAuth() {
     `;
   }
 }
+
 
 
