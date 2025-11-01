@@ -73,6 +73,7 @@ async function loadStatusAndWireUi() {
   }
 }
 function show(el, yes) {
+  if (!el) return;
   el.classList.toggle("d-none", !yes);
 }
 
