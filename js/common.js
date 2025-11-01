@@ -386,6 +386,7 @@ export function guardBrandLink() {
 }
 
 // nutzt deine zentralen Routen-Constants (HOME_PATH, SETTINGS_PATH, LOGIN_PATH, REGISTER_PATH)
+// common.js
 export function setupNavbarForAuth() {
   const nav = document.querySelector(".navbar .navbar-nav");
   if (!nav) return;
@@ -394,23 +395,46 @@ export function setupNavbarForAuth() {
   const onHome = here === HOME_PATH || here.endsWith("/homepage.html");
 
   if (isLoggedIn()) {
-    // 'Tresor' NUR anzeigen, wenn man NICHT gerade im Tresor ist
+    // E-Mail noch NICHT direkt in innerHTML einfügen (XSS-Sicherheit); wir füllen sie danach via textContent.
     nav.innerHTML = `
       ${onHome ? "" : `<li class="nav-item"><a class="nav-link" href="${HOME_PATH}">Tresor</a></li>`}
       <li class="nav-item"><a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a></li>
+      <li class="nav-item ms-lg-3 ms-md-2">
+        <span class="navbar-text small text-muted" id="navUserEmail"></span>
+      </li>
       <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Logout</a></li>
     `;
 
+    // Logout
     document.getElementById("logoutLink")?.addEventListener("click", (e) => {
       e.preventDefault();
       clearAuth();
       window.location.href = LOGIN_PATH;
     });
+
+    // E-Mail aus LocalStorage setzen …
+    const emailSpan = document.getElementById("navUserEmail");
+    const auth = getAuth();
+    if (emailSpan && auth?.email) {
+      emailSpan.textContent = auth.email;
+    }
+
+    // … oder (Fallback) vom Backend holen und speichern, falls im Storage noch keine E-Mail liegt
+    if (emailSpan && !auth?.email) {
+      fetchMe().then(me => {
+        if (me?.email) {
+          setAuth(getToken(), me.email);           // Token beibehalten, Email nachziehen
+          emailSpan.textContent = me.email;
+        }
+      }).catch(() => { /* ignorieren */ });
+    }
   } else {
-    // Unangemeldet: nur Login/Registrieren
+    // Unangemeldet
     nav.innerHTML = `
       <li class="nav-item"><a class="nav-link" href="${LOGIN_PATH}">Login</a></li>
       <li class="nav-item"><a class="nav-link" href="${REGISTER_PATH}">Register</a></li>
     `;
   }
 }
+
+
