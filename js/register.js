@@ -7,9 +7,6 @@ $(function () {
   const $err = $("#formError");
   const $totpBox = $("#totpBox");
   const $totpQr = $("#totpQr");
-  const $totpLink = $("#totpLink");
-  const $totpSecretWrap = $("#totpSecretWrap");
-  const $totpSecret = $("#totpSecret");
   $(document).on('click', '#btnGoLogin', () => goTo(LOGIN_PATH));
 
   const isEmail = v => /^\S+@\S+\.\S+$/.test(String(v).trim());
@@ -38,49 +35,31 @@ $(function () {
     busy(true);
     ajaxJSON(`/auth/register`, { email, password: pw })
       .done(res => {
-  // Erfolgreich: zeige QR-Code oder Link aus dem Backend-Response
-  const uri = res?.totpProvisioningUri || res?.totpUri || res?.otpauth || res?.otpauthUrl || res?.otpauth_url;
-  const qrDataUrl = res?.totpQrCodeDataUrl || res?.totpQrCode || res?.qrCodeDataUrl || res?.qr || null;
-  const secret = res?.totpSecret || res?.secret;
+        // Erfolgreich: QR-Code-Informationen anzeigen
+        const uri = res?.totpProvisioningUri || res?.totpUri || res?.otpauth || res?.otpauthUrl || res?.otpauth_url;
+        const qrDataUrl = res?.totpQrCodeDataUrl || res?.totpQrCode || res?.qrCodeDataUrl || res?.qr || null;
 
-  // Box einblenden
-  $totpBox.removeClass("d-none");
+        // Box einblenden
+        $totpBox.removeClass("d-none");
 
-  // QR bevorzugt aus Backend anzeigen
-  if (qrDataUrl) {
-    $totpQr.attr("src", qrDataUrl).css("display", "block");
-  } else if (uri) {
-    // Fallback: QR on-the-fly erzeugen
-    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(uri);
-    $totpQr.attr("src", qrUrl).css("display", "block");
-  } else {
-    // Kein QR verfügbar
-    $totpQr.css("display", "none");
-  }
+        // QR bevorzugt aus Backend anzeigen
+        if (qrDataUrl) {
+          $totpQr.attr("src", qrDataUrl).css("display", "block");
+        } else if (uri) {
+          // Fallback: QR on-the-fly erzeugen
+          const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(uri);
+          $totpQr.attr("src", qrUrl).css("display", "block");
+        } else {
+          // Kein QR verfügbar
+          $totpQr.css("display", "none");
+        }
 
-  // otpauth-URI als Link anzeigen (oder leeren)
-  if (uri) {
-    $totpLink.text(uri).attr("href", uri);
-  } else {
-    $totpLink.text("");
-    $totpLink.removeAttr("href");
-  }
-
-  // Secret optional anzeigen
-  if (secret) {
-    $totpSecret.text(secret);
-    $totpSecretWrap.removeClass("d-none");
-  } else {
-    $totpSecret.text("");
-    $totpSecretWrap.addClass("d-none");
-  }
-
-  // Formular deaktivieren, damit keine zweite Registrierung passiert
-  const $form = $("#formSignup");
-  const $btn  = $("#btnSignup");
-  $btn.prop("disabled", true);
-  $form.find("input").prop("disabled", true);
-})
+        // Formular deaktivieren, damit keine zweite Registrierung passiert
+        const $form = $("#formSignup");
+        const $btn = $("#btnSignup");
+        $btn.prop("disabled", true);
+        $form.find("input").prop("disabled", true);
+      })
       .fail(xhr => {
         if (xhr?.status === 409) {
           $err.text("E-Mail ist bereits vergeben.");

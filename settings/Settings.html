@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="de">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,24 +9,24 @@
   <link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/styles.css">
 </head>
+
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
-  <div class="container">
-    <a class="navbar-brand" href="../homepage.html">
-      <strong style="color:var(--brand)">Passwort</strong>manager
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="nav">
-      <!-- 🔽 Platzhalter für dynamische Navbar -->
-      <ul class="navbar-nav ms-auto">
-        <!-- setupNavbarForAuth() füllt diesen Bereich automatisch -->
-      </ul>
+    <div class="container">
+      <a class="navbar-brand" href="../homepage.html">
+        <strong style="color:var(--brand)">Passwort</strong>manager
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <!-- 🔽 Platzhalter für dynamische Navbar -->
+        <ul class="navbar-nav ms-auto">
+          <!-- setupNavbarForAuth() füllt diesen Bereich automatisch -->
+        </ul>
+      </div>
     </div>
-  </div>
-</nav>
-
+  </nav>
 
   <main class="container">
     <!-- TOTP -->
@@ -60,34 +61,74 @@
       </div>
     </div>
 
-    <!-- Alexa -->
-    <div class="card p-4 mt-3">
-      <h1 class="h5">Alexa-Verknüpfung</h1>
-      <div id="notLinked">
-        <p class="text-muted">Verknüpfe dein Konto, um Logins via Alexa zu bestätigen.</p>
-        <a id="btnLink" class="btn btn-primary" href="#">Mit Alexa verknüpfen</a>
-      </div>
-      <div id="linked" class="d-none">
-        <div class="alert alert-success mb-2">Alexa ist verknüpft.</div>
-        <button id="btnTest" class="btn btn-outline-secondary">Testanfrage senden</button>
+    <!-- Alexa Skill -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Alexa-Verknüpfung</h5>
+        <p id="linkStatus" class="mb-3 text-muted">Status wird geladen…</p>
+
+        <button id="btnShowLoginCode" class="btn btn-primary" disabled>
+          Anmeldecode anzeigen
+        </button>
+
+        <div id="loginCodeWrap" class="mt-3 d-none">
+          <div class="text-uppercase small text-muted">Anmeldecode</div>
+          <div id="loginCodeBox" class="display-5 fw-bold lh-1" style="letter-spacing: .15em;"></div>
+          <div id="ttl" class="text-muted small mt-1"> </div>
+          <button id="btnNewLoginCode" class="btn btn-link p-0 mt-2">Neu erzeugen</button>
+        </div>
       </div>
     </div>
-  
-    <!-- Alexa Skill -->
-    <div class="card p-4 mt-4">
-      <h2 class="h5">Alexa‑Skill Verknüpfung</h2>
-      <p class="text-muted">Verknüpfe dein Konto mit dem Alexa‑Skill, um dich später per Stimme zu authentifizieren.</p>
-      <div class="vstack gap-2">
-        <button id="btnAlexaLink" class="btn btn-outline-primary align-self-start">Verknüpfungs‑Code erstellen</button>
-        <div id="alexaLinkWrap" class="d-none">
-          <div class="alert alert-secondary">
-            <div class="small text-uppercase text-muted">Code</div>
-            <div class="fs-3 fw-bold" id="alexaLinkCode">—</div>
-            <div id="alexaLinkInfo" class="small text-muted"></div>
-          </div>
+    <!-- Sprach-PIN -->
+    <hr class="my-3">
+    <h2 class="h6 mb-3">Sprach-PIN (für Alexa)</h2>
+
+    <div id="pinNotLinked" class="alert alert-warning d-none">
+      Bitte verknüpfe zuerst dein Konto mit Alexa, um eine Sprach-PIN zu setzen.
+    </div>
+
+    <div id="pinUnset" class="d-none">
+      <p class="text-muted">Lege eine feste PIN (4–8 Ziffern) fest. Diese sprichst du bei der Authentifizierung mit
+        Alexa.</p>
+      <form id="formSetPin" class="row g-2">
+        <div class="col-sm-4">
+          <label class="form-label">Neue PIN</label>
+          <input name="pin" type="password" inputmode="numeric" pattern="\d{4,8}" minlength="4" maxlength="8"
+            class="form-control" required>
         </div>
-        <div id="alexaLinkError" class="text-danger small"></div>
+        <div class="col-sm-4">
+          <label class="form-label">Wiederholen</label>
+          <input name="pin2" type="password" inputmode="numeric" pattern="\d{4,8}" minlength="4" maxlength="8"
+            class="form-control" required>
+        </div>
+        <div class="col-sm-4 d-flex align-items-end">
+          <button class="btn btn-primary w-100" type="submit">PIN festlegen</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="pinSet" class="d-none">
+      <div class="alert alert-success mb-2">Sprach-PIN ist gesetzt.</div>
+      <div class="d-flex gap-2">
+        <button id="btnChangePin" class="btn btn-outline-primary">PIN ändern</button>
+        <button id="btnClearPin" class="btn btn-outline-secondary">PIN löschen</button>
       </div>
+      <!-- eingeblendetes Änderungsformular -->
+      <form id="formChangePin" class="row g-2 mt-2 d-none">
+        <div class="col-sm-4">
+          <label class="form-label">Neue PIN</label>
+          <input name="pin" type="password" inputmode="numeric" pattern="\d{4,8}" minlength="4" maxlength="8"
+            class="form-control">
+        </div>
+        <div class="col-sm-4">
+          <label class="form-label">Wiederholen</label>
+          <input name="pin2" type="password" inputmode="numeric" pattern="\d{4,8}" minlength="4" maxlength="8"
+            class="form-control">
+        </div>
+        <div class="col-sm-4 d-flex align-items-end">
+          <button class="btn btn-primary w-100" type="submit">Speichern</button>
+        </div>
+      </form>
     </div>
 
   </main>
@@ -96,12 +137,12 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script type="module" src="../js/common.js"></script>
   <script type="module" src="../js/settings.js"></script>
-  
-<script type="module">
-  import { setupNavbarForAuth, requireAuthOrRedirect } from "../js/common.js";
-  requireAuthOrRedirect();
-  setupNavbarForAuth();
-</script>
+
+  <script type="module">
+    import { setupNavbarForAuth, requireAuthOrRedirect } from "../js/common.js";
+    requireAuthOrRedirect();
+    setupNavbarForAuth();
+  </script>
   <script type="module" src="../js/voice.js"></script>
   <script type="module">
     import { wireAlexaLinkUI } from "../js/voice.js";
@@ -109,4 +150,5 @@
   </script>
 
 </body>
+
 </html>

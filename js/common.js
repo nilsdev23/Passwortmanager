@@ -2,11 +2,16 @@
    common.js (Frontend Utils)
    =========================== */
 
+<<<<<<< HEAD
 /** Production endpoints (Render) – fest verdrahtet */
 export const GQL_URL = "https://password-graphql-721738115352.europe-west1.run.app/";
+=======
+/** Production endpoints  **/
+export const GQL_URL = "https://password-graphql.onrender.com/graphql";
+>>>>>>> 4fe3e4327f5e4e585ff7b5c9fb648f8e7c95e1c8
 export const BACKEND_URL = "https://password-backend-721738115352.europe-west1.run.app";
 
-/** REST-Prefix deines Backends */
+/** REST-Prefix  */
 export const API_PREFIX = "/api";
 
 /** Route zu deiner Login-Seite (für Redirects) */
@@ -70,27 +75,38 @@ function normalizeApiPath(path) {
    - Speichert { token, email } als 'pm_auth'
 =========================== */
 const AUTH_KEY = "pm_auth";
+const AUTH_DEFAULT = { token: "", email: null, temporary: false };
 
 export function getAuth() {
   try {
     const raw = localStorage.getItem(AUTH_KEY);
     if (raw) {
       const obj = JSON.parse(raw);
-      if (obj && typeof obj.token === "string") return obj;
+      if (obj && typeof obj.token === "string") {
+        return {
+          token: obj.token,
+          email: obj.email ?? null,
+          temporary: !!obj.temporary,
+        };
+      }
     }
     // Legacy-Fallback (nur Token)
     const legacy = localStorage.getItem("token");
-    if (legacy) return { token: legacy, email: null };
+    if (legacy) return { token: legacy, email: null, temporary: false };
   } catch {}
-  return { token: "", email: null };
+  return { ...AUTH_DEFAULT };
 }
 
 export function getToken() {
   return getAuth().token || "";
 }
 
-export function setAuth(token, email) {
-  const data = { token: token || "", email: email || null };
+export function setAuth(token, email, options = {}) {
+  const data = {
+    token: token || "",
+    email: email ?? null,
+    temporary: !!options.temporary,
+  };
   try {
     localStorage.setItem(AUTH_KEY, JSON.stringify(data));
     // Optional: Legacy-Schlüssel für ältere Seiten
@@ -113,6 +129,11 @@ export function authHeader() {
 
 /** Auth erzwingen oder zur Login-Seite umleiten */
 const RETURN_KEY = "pm_return";
+
+export function hasFullAuth() {
+  const auth = getAuth();
+  return !!auth.token && !auth.temporary;
+}
 
 function setReturnPathIfNeeded() {
   try {
@@ -142,9 +163,9 @@ export function redirectAfterLogin(defaultPath = HOME_PATH) {
 }
 
 export function requireAuthOrRedirect() {
-  const t = getToken();
-  if (!t) {
-    setReturnPathIfNeeded();
+  const auth = getAuth();
+  if (!auth.token || auth.temporary) {
+    if (!auth.token) setReturnPathIfNeeded();
     goTo(LOGIN_PATH);
     return false;
   }
@@ -152,7 +173,7 @@ export function requireAuthOrRedirect() {
 }
 
 /* ===========================
-   jQuery-kompatibles Promise-Wrapperchen
+   jQuery-kompatibles Promise-Wrapper
    - ermöglicht .done/.fail/.always UND native .then/.catch/.finally
 =========================== */
 function asJQStyle(promise) {
@@ -171,7 +192,7 @@ function asJQStyle(promise) {
    REST-Helper (JSON) via fetch
 =========================== */
 export function ajaxJSON(path, methodOrBody, body) {
-  const url = normalizeApiPath(path); // fügt automatisch /api hinzu
+  const url = normalizeApiPath(path); 
 
   // Flexible Aufrufvarianten zulassen:
   // - ajaxJSON(path)
@@ -339,13 +360,9 @@ export function humanError(e) {
 }
 
 export function isLoggedIn() {
-  return !!getToken(); // nutzt pm_auth aus getAuth()
+  return hasFullAuth(); // nutzt pm_auth aus getAuth()
 }
 
-
-
-
-/** Navbar für Unangemeldete: nur Login & Registrieren anzeigen */
 export function lockUnauthedNavbar() {
   if (isLoggedIn()) return;
   const nav = document.querySelector('.navbar .navbar-nav');
@@ -357,7 +374,6 @@ export function lockUnauthedNavbar() {
   }
 }
 
-/** Klick auf Brand-Logo: Unangemeldete werden zum Login geschickt */
 export function guardBrandLink() {
   const brand = document.querySelector('.navbar-brand');
   if (!brand) return;
@@ -369,33 +385,62 @@ export function guardBrandLink() {
   });
 }
 
-// nutzt deine zentralen Routen-Constants (HOME_PATH, SETTINGS_PATH, LOGIN_PATH, REGISTER_PATH)
+
 export function setupNavbarForAuth() {
   const nav = document.querySelector(".navbar .navbar-nav");
   if (!nav) return;
+
+  nav.classList.add("flex-nowrap", "align-items-center", "gap-2");
 
   const here = window.location.pathname;
   const onHome = here === HOME_PATH || here.endsWith("/homepage.html");
 
   if (isLoggedIn()) {
-    // 'Tresor' NUR anzeigen, wenn man NICHT gerade im Tresor ist
+   
     nav.innerHTML = `
       ${onHome ? "" : `<li class="nav-item"><a class="nav-link" href="${HOME_PATH}">Tresor</a></li>`}
-      <li class="nav-item"><a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a></li>
-      <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Logout</a></li>
+      <li class="nav-item">
+        <a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a>
+      </li>
+      <li class="nav-item">
+        <a id="navUserEmail" class="nav-link pe-none text-truncate d-inline-block" href="#" tabindex="-1" style="max-width: 28ch;"></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="logoutLink" href="#">Logout</a>
+      </li>
     `;
 
+    // Logout
     document.getElementById("logoutLink")?.addEventListener("click", (e) => {
       e.preventDefault();
       clearAuth();
       window.location.href = LOGIN_PATH;
     });
+
+    // E-Mail setzen (zuerst aus Storage) …
+    const emailEl = document.getElementById("navUserEmail");
+    const auth = getAuth();
+    if (emailEl && auth?.email) {
+      emailEl.textContent = auth.email;
+    }
+
+    
+    if (emailEl && !auth?.email) {
+      fetchMe().then(me => {
+        if (me?.email) {
+          setAuth(getToken(), me.email);
+          emailEl.textContent = me.email;
+        }
+      }).catch(() => {});
+    }
   } else {
-    // Unangemeldet: nur Login/Registrieren
+    // Unangemeldet
     nav.innerHTML = `
       <li class="nav-item"><a class="nav-link" href="${LOGIN_PATH}">Login</a></li>
       <li class="nav-item"><a class="nav-link" href="${REGISTER_PATH}">Register</a></li>
     `;
   }
 }
+
+
 
