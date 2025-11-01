@@ -4,7 +4,7 @@
 
 
 /** Production endpoints (Render) – fest verdrahtet */
-export const GQL_URL = "https://password-graphql-721738115352.europe-west1.run.app";
+export const GQL_URL = "https://password-graphql-721738115352.europe-west1.run.app/graphql";
 
 
 
