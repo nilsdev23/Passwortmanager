@@ -41,6 +41,18 @@ body{
 .navbar .nav-link:focus{
   color: #0f172a !important;         /* Slate-900 */
 }
+.navbar .nav-item-email{
+  max-width: 28ch;
+}
+.navbar .nav-link-email{
+  display: flex;
+  align-items: center;
+  padding-top: .5rem;
+  padding-bottom: .5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* ---- Cards ---- */
 .card{

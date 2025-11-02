@@ -398,8 +398,8 @@ export function setupNavbarForAuth() {
    
     nav.innerHTML = `
       ${onHome ? "" : `<li class="nav-item"><a class="nav-link" href="${HOME_PATH}">Tresor</a></li>`}
-      <li class="nav-item">
-        <a id="navUserEmail" class="nav-link pe-none text-truncate d-inline-block" href="#" tabindex="-1" style="max-width: 28ch;"></a>
+      <li class="nav-item nav-item-email">
+        <span id="navUserEmail" class="nav-link nav-link-email pe-none" role="presentation"></span>
       </li>
       <li class="nav-item">
         <a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a>
@@ -440,5 +440,4 @@ export function setupNavbarForAuth() {
     `;
   }
 }
-
 
