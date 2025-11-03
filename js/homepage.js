@@ -11,6 +11,7 @@ $(async function () {
   const $errLst = $("#listError");
   const $empty = $("#emptyState");
   const $form = $("#formItem");
+  const $search = $("#search");
   const $modalEl = document.getElementById("pwModal");
   const $modalTitle = $("#pwModal .modal-title");
   const $saveBtn = $("#btnSave");
@@ -18,6 +19,8 @@ $(async function () {
   const modal = BS ? new BS.Modal($modalEl) : null;
   const defaultModalTitle = $modalTitle.text();
   const defaultSaveLabel = $saveBtn.text();
+  const DEFAULT_EMPTY_MESSAGE = "Noch keine Einträge.";
+  let allItems = [];
 
   $("#btnReload").on("click", () => load());
   $("#btnAdd").on("click", () => {
@@ -29,6 +32,7 @@ $(async function () {
     const pwd = genPassword(16);
     $form.find('input[name="password"]').val(pwd);
   });
+  $search.on("input", () => applyFilter());
 
  
   const Q_VAULT_ITEMS = /* GraphQL */ `
@@ -65,19 +69,30 @@ $(async function () {
     try {
       $errLst.text("");
       const data = await gql(Q_VAULT_ITEMS);
-      render(data.vaultItems || []);
+      allItems = data.vaultItems || [];
+      applyFilter();
     } catch (e) {
       $errLst.text(humanError(e));
     }
   }
 
-  function render(items) {
+  function applyFilter() {
+    const term = normalizeTerm($search.val());
+    const hasFilter = !!term;
+    const filtered = hasFilter ? allItems.filter((it) => matchesTerm(it, term)) : allItems;
+    const emptyMessage = hasFilter && allItems.length ? "Keine Treffer." : DEFAULT_EMPTY_MESSAGE;
+    render(filtered, emptyMessage);
+  }
+
+  function render(items, emptyMessage = DEFAULT_EMPTY_MESSAGE) {
     $cards.empty();
     if (!items.length) {
+      $empty.text(emptyMessage);
       $empty.removeClass("d-none");
       return;
     }
     $empty.addClass("d-none");
+    $empty.text(DEFAULT_EMPTY_MESSAGE);
 
     for (const it of items) {
       $cards.append(buildCard(it));
@@ -229,6 +244,16 @@ $(async function () {
 
   function formatUrl(url) {
     return String(url || "").replace(/^https?:\/\//i, "");
+  }
+
+  function normalizeTerm(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function matchesTerm(item, term) {
+    if (!term) return true;
+    const fields = [item.titleEnc, item.usernameEnc, item.urlEnc, item.notesEnc];
+    return fields.some((value) => String(value || "").toLowerCase().includes(term));
   }
 
   async function copyToClipboard(text) {

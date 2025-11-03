@@ -39,6 +39,30 @@ body{
 .navbar .nav-link:focus{
   color: #0f172a !important;         
 }
+.navbar .nav-link.active{
+  color: #fff !important;
+  background-color: var(--brand);
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: 0 6px 16px -8px rgba(41,37,64,.6);
+}
+.navbar .nav-link.active:hover,
+.navbar .nav-link.active:focus{
+  color: #fff !important;
+  background-color: var(--brand-hover);
+}
+.navbar .nav-item-email{
+  max-width: 28ch;
+}
+.navbar .nav-link-email{
+  display: flex;
+  align-items: center;
+  padding-top: .5rem;
+  padding-bottom: .5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 
 .card{

@@ -369,16 +369,21 @@ export function setupNavbarForAuth() {
 
   const here = window.location.pathname;
   const onHome = here === HOME_PATH || here.endsWith("/homepage.html");
+  const onSettings = here === SETTINGS_PATH || here.endsWith("/settings/Settings.html");
+  const onLogin = here === LOGIN_PATH || here.endsWith("/logon/Logon.html");
+  const onRegister = here === REGISTER_PATH || here.endsWith("/register/Register.html");
 
   if (isLoggedIn()) {
    
     nav.innerHTML = `
-      ${onHome ? "" : `<li class="nav-item"><a class="nav-link" href="${HOME_PATH}">Tresor</a></li>`}
-      <li class="nav-item">
-        <a class="nav-link${here === SETTINGS_PATH ? " active" : ""}" href="${SETTINGS_PATH}">Settings</a>
+      <li class="nav-item nav-item-email">
+        <span id="navUserEmail" style="font-weight: bold" class="nav-link nav-link-email pe-none" role="presentation"></span>
       </li>
       <li class="nav-item">
-        <a id="navUserEmail" class="nav-link pe-none text-truncate d-inline-block" href="#" tabindex="-1" style="max-width: 28ch;"></a>
+        <a class="nav-link${onHome ? " active" : ""}"${onHome ? ' aria-current="page"' : ""} href="${HOME_PATH}">Tresor</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link${onSettings ? " active" : ""}"${onSettings ? ' aria-current="page"' : ""} href="${SETTINGS_PATH}">Settings</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" id="logoutLink" href="#">Logout</a>
@@ -411,11 +416,12 @@ export function setupNavbarForAuth() {
   } else {
     // Unangemeldet
     nav.innerHTML = `
-      <li class="nav-item"><a class="nav-link" href="${LOGIN_PATH}">Login</a></li>
-      <li class="nav-item"><a class="nav-link" href="${REGISTER_PATH}">Register</a></li>
+      <li class="nav-item">
+        <a class="nav-link${onLogin ? " active" : ""}"${onLogin ? ' aria-current="page"' : ""} href="${LOGIN_PATH}">Login</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link${onRegister ? " active" : ""}"${onRegister ? ' aria-current="page"' : ""} href="${REGISTER_PATH}">Register</a>
+      </li>
     `;
   }
 }
-
-
-

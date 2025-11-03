@@ -40,6 +40,10 @@ async function startVoiceChallenge() {
       setText("voiceTtl", String(state.voice.ttl));
       if (state.voice.ttl <= 0) {
         clearInterval(state.voice.ttlTimer);
+          setText("voiceError", "Code abgelaufen – neuer Code wird erzeugt…");
+          Promise.resolve().then(() => {
+              startVoiceChallenge();
+          });
       }
     }, 1000);
 
@@ -74,13 +78,28 @@ function startVoiceFinalizePolling() {
   }, 3000);
 }
 
-function cancelVoiceFlow() {
+function cancelVoiceFlow({ switchToTotp = false } = {}) {
   stopVoiceTimers();
+  state.voice.code = null;
+  state.voice.ttl = 0;
   setText("voiceError", "");
   setText("voiceInfo", "Wir prüfen automatisch alle paar Sekunden, ob Alexa dich bestätigt hat…");
   setText("voiceCode", "----");
   setText("voiceCodeInline", "----");
   setText("voiceTtl", "—");
+
+  if (switchToTotp) {
+    const tabTrigger = document.querySelector("#tab-totp");
+    if (tabTrigger && window.bootstrap?.Tab) {
+      window.bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+    } else {
+      const totpPane = document.getElementById("pane-totp");
+      const voicePane = document.getElementById("pane-voice");
+      totpPane?.classList.add("show", "active");
+      voicePane?.classList.remove("show", "active");
+    }
+    document.querySelector('#pane-totp input[name="code"]')?.focus();
+  }
 }
 
 $(function () {
@@ -123,7 +142,7 @@ $(function () {
         
         document.getElementById("tab-voice").addEventListener("shown.bs.tab", () => {
           if (!state.voice.code) startVoiceChallenge();
-        }, { once: true });
+        });
       } else {
         addClass($voiceSection, "d-none");
         removeClass($voiceUnavailable, "d-none");
@@ -179,7 +198,7 @@ $(function () {
 
   $("#btnCancelVoice").on("click", function (e) {
     e.preventDefault();
-    cancelVoiceFlow();
+    cancelVoiceFlow({ switchToTotp: true });
   });
 
   
