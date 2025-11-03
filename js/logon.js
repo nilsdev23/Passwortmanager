@@ -40,6 +40,10 @@ async function startVoiceChallenge() {
       setText("voiceTtl", String(state.voice.ttl));
       if (state.voice.ttl <= 0) {
         clearInterval(state.voice.ttlTimer);
+          setText("voiceError", "Code abgelaufen – neuer Code wird erzeugt…");
+          Promise.resolve().then(() => {
+              startVoiceChallenge();
+          });
       }
     }, 1000);
 
