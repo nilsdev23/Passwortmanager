@@ -1,0 +1,10 @@
+<!-- public/favicon.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Körper des Schlosses -->
+  <rect x="12" y="28" width="40" height="28" rx="6" fill="#111827"></rect>
+  <!-- Bügel -->
+  <path d="M20 28v-6a12 12 0 0 1 24 0v6h-6v-6a6 6 0 0 0-12 0v6z" fill="#111827"></path>
+  <!-- Schlüsselloch -->
+  <circle cx="32" cy="42" r="3.5" fill="#ffffff"></circle>
+  <rect x="31" y="44.5" width="2" height="7" rx="1" fill="#ffffff"></rect>
+</svg>
