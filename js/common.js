@@ -400,11 +400,11 @@ export function setupNavbarForAuth() {
   if (isLoggedIn()) {
    
     nav.innerHTML = `
-      <li class="nav-item">
-        <a class="nav-link${onHome ? " active" : ""}"${onHome ? ' aria-current="page"' : ""} href="${HOME_PATH}">Tresor</a>
-      </li>
       <li class="nav-item nav-item-email">
         <span id="navUserEmail" class="nav-link nav-link-email pe-none" role="presentation"></span>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link${onHome ? " active" : ""}"${onHome ? ' aria-current="page"' : ""} href="${HOME_PATH}">Tresor</a>
       </li>
       <li class="nav-item">
         <a class="nav-link${onSettings ? " active" : ""}"${onSettings ? ' aria-current="page"' : ""} href="${SETTINGS_PATH}">Settings</a>
