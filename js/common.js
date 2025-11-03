@@ -401,7 +401,7 @@ export function setupNavbarForAuth() {
    
     nav.innerHTML = `
       <li class="nav-item nav-item-email">
-        <span id="navUserEmail" class="nav-link nav-link-email pe-none" role="presentation"></span>
+        <span id="navUserEmail" style="font-weight: bold" class="nav-link nav-link-email pe-none" role="presentation"></span>
       </li>
       <li class="nav-item">
         <a class="nav-link${onHome ? " active" : ""}"${onHome ? ' aria-current="page"' : ""} href="${HOME_PATH}">Tresor</a>
