@@ -34,7 +34,7 @@ $(async function () {
   });
   $search.on("input", () => applyFilter());
 
-  // --- GraphQL Operations (Schema: *_enc + VaultUpsertEncInput) ---
+ 
   const Q_VAULT_ITEMS = /* GraphQL */ `
     query {
       vaultItems {

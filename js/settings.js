@@ -27,9 +27,9 @@ async function loadStatusAndWireUi() {
   const linkSection = document.getElementById("alexaLinkSection");
 
   try {
-    const me = await fetchMe(); // GET /api/auth/me
+    const me = await fetchMe(); 
 
-    // Status-Text + Button freischalten
+    
     if (me.alexaLinked) {
       $status.text("Alexa ist verknüpft ✅");
       $btnShow.prop("disabled", false);
@@ -46,7 +46,7 @@ async function loadStatusAndWireUi() {
         $btnShow.prop("disabled", true);
         $btnNew.prop("disabled", true);
 
-        // POST /api/voice/challenge -> { code, ttlSeconds }
+        
         const { code, ttlSeconds } = await ajaxJSON("/voice/challenge", "POST");
 
         $box.text(code);
@@ -132,12 +132,12 @@ $(async function () {
     }
   });
 
-  // PIN ändern (Form ein-/ausblenden)
+ 
   $btnChange?.addEventListener("click", () => {
     $formChange.classList.toggle("d-none");
   });
 
-  // PIN ändern (submit)
+  
   $formChange?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const fd = new FormData($formChange);

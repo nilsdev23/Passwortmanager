@@ -25,7 +25,7 @@ $(function () {
   function submit() {
     $err.text("");
     const f = new FormData($form[0]);
-    const email = String(f.get("email") || "").trim().toLowerCase(); // Backend prüft case-insensitive
+    const email = String(f.get("email") || "").trim().toLowerCase(); 
     const pw = f.get("password");
     const pw2 = f.get("password2");
 
@@ -42,7 +42,7 @@ $(function () {
         // Box einblenden
         $totpBox.removeClass("d-none");
 
-        // QR bevorzugt aus Backend anzeigen
+        // QR aus Backend anzeigen
         if (qrDataUrl) {
           $totpQr.attr("src", qrDataUrl).css("display", "block");
         } else if (uri) {
