@@ -20,9 +20,9 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="nav">
-        <!-- 🔽 Platzhalter für dynamische Navbar -->
+        
         <ul class="navbar-nav ms-auto">
-          <!-- setupNavbarForAuth() füllt diesen Bereich automatisch -->
+          
         </ul>
       </div>
     </div>
@@ -48,13 +48,13 @@
         <div id="formError" class="text-danger small mt-2"></div>
       </form>
 
-      <!-- Schritt 2: Auswahl der zweiten Faktor-Methode (wird nach Login eingeblendet) -->
+      <!-- Schritt 2: Auswahl der zweiten Faktor-Methode -->
       <div id="mfaContainer" class="mt-3" style="display:none">
         <div class="alert alert-info py-2 mb-3">
           Wähle deine zweite Stufe der Anmeldung.
         </div>
 
-        <!-- Tabs für MFA -->
+        
         <ul class="nav nav-pills mb-3" id="mfaTabs" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="tab-totp" data-bs-toggle="pill" data-bs-target="#pane-totp"
@@ -76,7 +76,7 @@
             <form id="formTotp" class="vstack gap-2">
               <div>
                 <label class="form-label">TOTP-Code</label>
-                <!-- Wichtig: im HTML ein einzelner Backslash -->
+                
                 <input class="form-control" type="text" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6"
                   required />
               </div>
@@ -95,7 +95,7 @@
               In den Settings kannst du das einrichten.
             </div>
 
-            <!-- Voice-Flow -->
+            
             <div id="voiceSection" class="d-none">
               <div class="card mb-2">
                 <div class="card-body">
@@ -130,7 +130,7 @@
           </div>
         </div>
       </div>
-      <!-- Ende Schritt 2 -->
+      
     </div>
   </main>
 

@@ -22,7 +22,7 @@ function setText(id, txt) {
 
 async function startVoiceChallenge() {
   try {
-    // Mit tmpToken im Storage authentifizieren (haben wir bereits gesetzt)
+    // Mit tmpToken im Storage authentifizieren
     const resp = await ajaxJSON("/voice/challenge", {});
     const { code, ttlSeconds } = resp;
 
@@ -43,7 +43,7 @@ async function startVoiceChallenge() {
       }
     }, 1000);
 
-    // Finalisierung pollen
+    // Mit dem Polling starten
     startVoiceFinalizePolling();
   } catch (e) {
     setText("voiceError", humanError(e));
@@ -61,7 +61,7 @@ function startVoiceFinalizePolling() {
   if (state.voice.pollTimer) clearInterval(state.voice.pollTimer);
   state.voice.pollTimer = setInterval(async () => {
     try {
-      const res = await ajaxJSON("/voice/finalize", {}); // erwartet Bearer tmpToken
+      const res = await ajaxJSON("/voice/finalize", {}); 
       if (res && res.token) {
         // Erfolgreich – finalen Token speichern und weiter
         stopVoiceTimers();
@@ -69,8 +69,7 @@ function startVoiceFinalizePolling() {
         redirectAfterLogin();
       }
     } catch (e) {
-      // solange "no-verified-challenge" → weiter pollen
-      // andere Fehler ignorieren wir kurz und probieren erneut
+      
     }
   }, 3000);
 }
@@ -121,8 +120,7 @@ $(function () {
       if (alexaOk) {
         removeClass($voiceSection, "d-none");
         addClass($voiceUnavailable, "d-none");
-        // Direkt beim Öffnen des Voice-Tabs Code erzeugen
-        // (Nutzer kann natürlich auf TOTP bleiben)
+        
         document.getElementById("tab-voice").addEventListener("shown.bs.tab", () => {
           if (!state.voice.code) startVoiceChallenge();
         }, { once: true });
@@ -131,7 +129,7 @@ $(function () {
         removeClass($voiceUnavailable, "d-none");
       }
 
-      // Fokus auf TOTP-Eingabe setzen (häufigster Weg)
+      
       document.querySelector('#pane-totp input[name="code"]')?.focus();
 
     } catch (x) {
@@ -165,7 +163,7 @@ $(function () {
 
   $("#btnIHaveSpoken").on("click", async function (e) {
     e.preventDefault();
-    // Triggert eine sofortige Finalisierungs-Prüfung
+    
     try {
       const res = await ajaxJSON("/voice/finalize", {});
       if (res && res.token) {
@@ -184,6 +182,6 @@ $(function () {
     cancelVoiceFlow();
   });
 
-  // Beim Verlassen aufräumen
+  
   window.addEventListener("beforeunload", stopVoiceTimers);
 });

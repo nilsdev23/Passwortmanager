@@ -30,7 +30,7 @@ $(async function () {
     $form.find('input[name="password"]').val(pwd);
   });
 
-  // --- GraphQL Operations (Schema: *_enc + VaultUpsertEncInput) ---
+ 
   const Q_VAULT_ITEMS = /* GraphQL */ `
     query {
       vaultItems {

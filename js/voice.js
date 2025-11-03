@@ -1,10 +1,7 @@
 
 import { ajaxJSON, ajaxJSONWithAuth, setAuth, humanError, redirectAfterLogin, requireAuthOrRedirect, getToken } from "./common.js";
 
-/**
- * Voice/Alexa helpers for linking and login via the skill.
- * Robust to slightly different backend payload keys.
- */
+
 
 function pick(obj, ...keys) {
   for (const k of keys) {
@@ -15,9 +12,9 @@ function pick(obj, ...keys) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-/** Start link-code creation while the user is logged in */
+
 export async function startVoiceLink() {
-  // requires normal auth
+  
   try {
     const res = await ajaxJSON("/voice/link/start", {});
     const code = pick(res, "code", "linkCode", "link_code", "value");
@@ -29,10 +26,7 @@ export async function startVoiceLink() {
   }
 }
 
-/**
- * Starts a voice challenge for passwordless login via the Alexa skill.
- * Returns { code, tmpToken } etc.
- */
+
 export async function startVoiceChallenge() {
   try {
     const res = await ajaxJSON("/voice/challenge", {});
@@ -50,7 +44,7 @@ export async function startVoiceChallenge() {
   }
 }
 
-/** Polls /voice/finalize with the tmp token to exchange it for a full JWT. */
+
 export async function finalizeVoiceLogin(tmpToken, { timeoutMs = 60000, intervalMs = 2000 } = {}) {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
@@ -59,17 +53,14 @@ export async function finalizeVoiceLogin(tmpToken, { timeoutMs = 60000, interval
       const token = pick(res, "token", "jwt");
       if (token) return token;
     } catch (e) {
-      // 400 likely means "no-verified-challenge" → keep polling
-      // Any other network error: try again until timeout
+      
     }
     await sleep(intervalMs);
   }
   throw new Error("Zeitüberschreitung – nicht verifiziert.");
 }
 
-/* ====== UI wiring helpers ====== */
 
-/** Enhance login page with "Login mit Alexa" flow */
 export function wireAlexaLoginUI({
   startBtnSelector = "#btnAlexaLogin",
   boxSelector = "#alexaLoginBox",
@@ -83,7 +74,7 @@ export function wireAlexaLoginUI({
   const $msg = $(msgSelector);
   const $err = $(errorSelector);
 
-  if ($btn.length === 0) return; // not on this page
+  if ($btn.length === 0) return; 
 
   $btn.on("click", async (e) => {
     e.preventDefault();
@@ -95,7 +86,7 @@ export function wireAlexaLoginUI({
       $code.text(code || "–");
       $("#alexaCodeInline").text(code || "…");
       $msg.text("Sag: „Alexa, öffne Passwortmanager und authentifiziere mich mit Code " + (code || "…") + " und deiner PIN.“");
-      // poll finalize
+      
       const jwt = await finalizeVoiceLogin(tmpToken, { timeoutMs: 120000, intervalMs: 2000 });
       try { setAuth(jwt, null); } catch {}
       redirectAfterLogin();
@@ -107,7 +98,7 @@ export function wireAlexaLoginUI({
   });
 }
 
-/** Enhance settings page with link-code button */
+
 export function wireAlexaLinkUI({
   btnSelector = "#btnAlexaLink",
   codeWrapSelector = "#alexaLinkWrap",

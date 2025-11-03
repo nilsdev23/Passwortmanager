@@ -1,43 +1,38 @@
-/* ===========================
-   common.js (Frontend Utils)
-   =========================== */
 
 
-/** Production endpoints (Render) – fest verdrahtet */
+
+/** Production endpoints */
 export const GQL_URL = "https://password-graphql-721738115352.europe-west1.run.app/graphql";
 
 
 
 export const BACKEND_URL = "https://password-backend-721738115352.europe-west1.run.app";
 
-/** REST-Prefix  */
+
 export const API_PREFIX = "/api";
 
-/** Route zu deiner Login-Seite (für Redirects) */
-/** Centralized app routes */
+
 export const HOME_PATH     = "/homepage.html";
 export const LOGIN_PATH    = "/logon/Logon.html";
 export const LOGOFF_PATH   = "/logon/Logoff.html";
 export const REGISTER_PATH = "/register/Register.html";
 export const SETTINGS_PATH = "/settings/Settings.html";
 
-// Small helper to navigate consistently
+
 export function goTo(path) {
   try {
     window.location.assign(path);
   } catch {}
 }
 
-/* ===========================
-   URL- und Format-Helfer
-=========================== */
 
-/** Prüft auf absolute HTTP/HTTPS-URL */
+
+
 function isAbsoluteHttpUrl(u) {
   return /^https?:\/\//i.test(String(u || ""));
 }
 
-/** Führt base und path sauber zusammen (keine doppelten/fehlenden Slashes) */
+
 function joinUrl(base, path) {
   const b = String(base || "").replace(/\/+$/g, "");
   const p = String(path || "");
@@ -69,10 +64,7 @@ function normalizeApiPath(path) {
   return joinUrl(BACKEND_URL, p);
 }
 
-/* ===========================
-   Auth storage helpers
-   - Speichert { token, email } als 'pm_auth'
-=========================== */
+
 const AUTH_KEY = "pm_auth";
 const AUTH_DEFAULT = { token: "", email: null, temporary: false };
 
@@ -89,7 +81,7 @@ export function getAuth() {
         };
       }
     }
-    // Legacy-Fallback (nur Token)
+   
     const legacy = localStorage.getItem("token");
     if (legacy) return { token: legacy, email: null, temporary: false };
   } catch {}
@@ -108,7 +100,7 @@ export function setAuth(token, email, options = {}) {
   };
   try {
     localStorage.setItem(AUTH_KEY, JSON.stringify(data));
-    // Optional: Legacy-Schlüssel für ältere Seiten
+    
     localStorage.setItem("token", data.token);
   } catch {}
 }
@@ -120,13 +112,13 @@ export function clearAuth() {
   } catch {}
 }
 
-/** Authorization-Header Helper */
+
 export function authHeader() {
   const t = getToken();
   return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
-/** Auth erzwingen oder zur Login-Seite umleiten */
+
 const RETURN_KEY = "pm_return";
 
 export function hasFullAuth() {
@@ -137,7 +129,7 @@ export function hasFullAuth() {
 function setReturnPathIfNeeded() {
   try {
     const here = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    // Avoid storing auth-related pages as return targets
+    
     const blocked = new Set([LOGIN_PATH, REGISTER_PATH, LOGOFF_PATH]);
     if (!blocked.has(window.location.pathname)) {
       sessionStorage.setItem(RETURN_KEY, here);
@@ -171,10 +163,7 @@ export function requireAuthOrRedirect() {
   return true;
 }
 
-/* ===========================
-   jQuery-kompatibles Promise-Wrapper
-   - ermöglicht .done/.fail/.always UND native .then/.catch/.finally
-=========================== */
+
 function asJQStyle(promise) {
   const obj = {
     done(fn)   { promise.then(fn); return obj; },
@@ -187,17 +176,10 @@ function asJQStyle(promise) {
   return obj;
 }
 
-/* ===========================
-   REST-Helper (JSON) via fetch
-=========================== */
+
 export function ajaxJSON(path, methodOrBody, body) {
   const url = normalizeApiPath(path); 
 
-  // Flexible Aufrufvarianten zulassen:
-  // - ajaxJSON(path)
-  // - ajaxJSON(path, method)
-  // - ajaxJSON(path, method, body)
-  // - ajaxJSON(path, body)
   let method = methodOrBody;
   if (methodOrBody && typeof methodOrBody === "object" && !Array.isArray(methodOrBody)) {
     body = methodOrBody;
@@ -253,7 +235,7 @@ export function ajaxJSON(path, methodOrBody, body) {
 }
 
 
-/** Spezialfall: wie ajaxJSON, aber mit explizitem Bearer-Token (z. B. tmpToken) */
+
 export async function ajaxJSONWithAuth(path, body = {}, token, method = "POST") {
   const url = normalizeApiPath(path);
   const headers = { "Authorization": "Bearer " + String(token || "").trim() };
@@ -290,9 +272,7 @@ export async function ajaxJSONWithAuth(path, body = {}, token, method = "POST") 
   }
   return json;
 }
-/* ===========================
-   GraphQL-Helper
-=========================== */
+/*GraphQL helper*/ 
 export async function gql(query, variables = {}) {
   let res;
   try {
@@ -338,17 +318,13 @@ export async function gql(query, variables = {}) {
   return payload.data;
 }
 
-/* ===========================
-   Komfort-APIs oben drauf
-=========================== */
+
 export function fetchMe() {
-  // gibt Promise/Thenable zurück → await oder .done möglich
+  
   return ajaxJSON("/auth/me");
 }
 
-/* ===========================
-   Kleine Helper
-=========================== */
+
 export function humanError(e) {
   if (!e) return "Unbekannter Fehler";
   if (typeof e === "string") return e;
@@ -359,7 +335,7 @@ export function humanError(e) {
 }
 
 export function isLoggedIn() {
-  return hasFullAuth(); // nutzt pm_auth aus getAuth()
+  return hasFullAuth(); 
 }
 
 export function lockUnauthedNavbar() {
@@ -416,7 +392,7 @@ export function setupNavbarForAuth() {
       window.location.href = LOGIN_PATH;
     });
 
-    // E-Mail setzen (zuerst aus Storage) …
+    // E-Mail setzen 
     const emailEl = document.getElementById("navUserEmail");
     const auth = getAuth();
     if (emailEl && auth?.email) {

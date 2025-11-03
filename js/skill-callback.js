@@ -16,7 +16,7 @@ async function finishLogin() {
   const $error  = $("#error");
 
   try {
-    // 1) Direkter Token-Transport (Query oder Hash)
+    // 1) Direkter Token-Transport
     const token = getParam("token") || getHashParam("token");
     const email = getParam("email") || getHashParam("email") || "";
 
@@ -39,7 +39,7 @@ async function finishLogin() {
       throw new Error("Weder Token noch Code gefunden.");
     }
 
-    // Die Redirect URI muss dem Backend bekannt/konfiguriert sein
+    
     const redirectUri = window.location.origin + "/logon/SkillCallback.html";
 
     const res = await ajaxJSON("/auth/skill/exchange", { code, redirectUri });
