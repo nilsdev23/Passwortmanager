@@ -24,6 +24,7 @@ async function loadStatusAndWireUi() {
   const $box  = $("#loginCodeBox");
   const $ttl  = $("#ttl");
   const $btnNew = $("#btnNewLoginCode");
+  const linkSection = document.getElementById("alexaLinkSection");
 
   try {
     const me = await fetchMe(); // GET /api/auth/me
@@ -32,10 +33,12 @@ async function loadStatusAndWireUi() {
     if (me.alexaLinked) {
       $status.text("Alexa ist verknüpft ✅");
       $btnShow.prop("disabled", false);
+      show(linkSection, false);
     } else {
       $status.text("Alexa ist noch nicht verknüpft ❌");
       $btnShow.prop("disabled", true);
       $wrap.addClass("d-none");
+      show(linkSection, true);
     }
 
     async function fetchChallenge() {
@@ -73,6 +76,7 @@ async function loadStatusAndWireUi() {
   }
 }
 function show(el, yes) {
+  if (!el) return;
   el.classList.toggle("d-none", !yes);
 }
 

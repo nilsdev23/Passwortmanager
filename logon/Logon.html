@@ -92,7 +92,7 @@
             <!-- Falls Alexa nicht verknüpft / keine Sprach-PIN -->
             <div id="voiceUnavailable" class="alert alert-warning d-none">
               Dieser Account ist nicht mit Alexa verknüpft oder es ist keine Sprach-PIN gesetzt.
-              <a href="/settings/Settings.html">In den Settings</a> kannst du das einrichten.
+              In den Settings kannst du das einrichten.
             </div>
 
             <!-- Voice-Flow -->
@@ -134,9 +134,16 @@
     </div>
   </main>
 
-  <script src="./js/jquery-3.7.1.min.js"></script>
-  <script src="./js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="./js/logon.js"></script>
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script type="module" src="../js/common.js"></script>
+<script type="module" src="../js/logon.js"></script>
+<script type="module">
+  import { setupNavbarForAuth, guardBrandLink } from "../js/common.js";
+  setupNavbarForAuth();
+  guardBrandLink();
+</script>
+
 </body>
 
 </html>
